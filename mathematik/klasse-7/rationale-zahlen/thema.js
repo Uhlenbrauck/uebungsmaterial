@@ -333,12 +333,12 @@
           }
         ],
         "notizbuchUeben": [
-          {
-            "titel": "Realmath-Übungen zum Rechnen mit rationalen Zahlen",
-            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2023_24_07c_M_Uhl/SiteAssets/2023_24_07c_M_Uhl-Notizbuch/_Inhaltsbibliothek/7.1%20Rationale%20Zahlen.one",
-            "web": "https://fbgschwerte.sharepoint.com/sites/2023_24_07c_M_Uhl/_layouts/OneNote.aspx?id=%2Fsites%2F2023_24_07c_M_Uhl%2FSiteAssets%2F2023_24_07c_M_Uhl-Notizbuch&wd=target%28_Inhaltsbibliothek%2F7.1%20Rationale%20Zahlen.one%7C2CA06ADD-F0F2-418B-91BC-7341B0F1FCF7%2F%5C%7C%20Realmath-%C3%9Cbungen%20zum%20Rechnen%20mit%20rationalen%20Zahlen%7C7384F1FD-AD57-4845-8329-AB07286AB5A4%2F%29"
-          }
-        ]
+        {
+          "titel": "Realmath Multiplizieren und Dividieren",
+          "onenote": "onenote:https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/Documents/OneNote%20Notizbücher/Mathematik%2007/_2026-27/07a/7.1%20Rationale%20Zahlen.one#|%20Realmath%20Multiplizieren%20und%20Dividieren&section-id={634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2}&page-id={F054C378-D4BD-8742-BDAC-3CD0D3DE04E9}&end",
+          "web": "https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/_layouts/Doc.aspx?sourcedoc={4CD9181F-4FBC-447F-A857-0D4FA29C5332}&wd=target%28_2026-27%2F07a%2F7.1%20Rationale%20Zahlen.one%7C634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2%2F%5C%7C%20Realmath%20Multiplizieren%20und%20Dividieren%7CF054C378-D4BD-8742-BDAC-3CD0D3DE04E9%2F%29&wdpartid={E55D0379-FA1E-C00D-0578-1801EF49C6D2}{1}&wdsectionfileid={AA399844-3520-4FF6-A98C-B9795DB86DE0}&end"
+        }
+      ]
       },
       {
         "id": "rechengesetze",
