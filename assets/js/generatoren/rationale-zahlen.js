@@ -928,5 +928,25 @@
     };
   };
 
+  // ---------------------------------------------------------------------
+  // Gesperrte Terme: Aufgaben der Klassenarbeit dürfen nicht zufällig entstehen.
+  // Gespeichert sind nur Prüfsummen (FNV-1a), nicht die Terme selbst.
+  // ---------------------------------------------------------------------
+  const termHash = (t) => {
+    let x = 0x811c9dc5;
+    for (const c of t) { x ^= c.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; }
+    return x.toString(16).padStart(8, '0');
+  };
+  const GESPERRT = new Set(['9e8f4272', 'bac0212c', '4dbf99cf', '3c6ef886', 'f81d378d', '3a5c1334', '80b967dd', '549cec80', '85b63c1a', 'c3bc8dd1', '8f07597a']);
+  for (const [name, original] of Object.entries(gen)) {
+    gen[name] = (stufe) => {
+      let a = original(stufe);
+      for (let i = 0; i < 100 && a.term && GESPERRT.has(termHash(a.term)); i++) a = original(stufe);
+      return a;
+    };
+  }
+  UM.termHash = termHash;
+  UM.gesperrteTerme = GESPERRT;
+
   UM.daten = Object.assign(UM.daten || {}, { FEHLER, AUSSAGEN, KONTEXTE });
 })(typeof window !== 'undefined' ? window : globalThis);

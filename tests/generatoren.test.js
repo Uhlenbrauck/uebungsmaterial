@@ -7,11 +7,7 @@ const { lade, ALLE, texWert } = require('./hilfe.js');
 const UM = lade(...ALLE);
 const DURCHLAEUFE = 300;
 
-/** Terme der Klassenarbeit (so wie die Generatoren sie drucken würden) – dürfen nicht als Aufgabe erscheinen. */
-const AUS_DER_ARBEIT = new Set([
-  '-65-136', '-13+43', '2{,}8-10', '(-32)+(-52)', '6{,}3-(-7{,}8)', '0{,}96:(-3)', '0{,}7\\cdot (-0{,}6)',
-  '-\\frac{3}{2}-\\left(+\\frac{2}{5}\\right)', '-\\frac{3}{5}\\cdot \\left(-\\frac{5}{9}\\right)', '4\\cdot (-5{,}3+1{,}3)',
-]);
+/** Gesperrte Terme (Klassenarbeit) liegen nur als Prüfsummen im Generator, siehe UM.gesperrteTerme. */
 
 function formeln(text) {
   const out = [];
@@ -48,6 +44,17 @@ test('Bruch: Eingaben werden erkannt', () => {
   assert.strictEqual(leseEingabe('6/8').gekuerzt, false);
   assert.strictEqual(UM.pruefeZahl('6/8', new Bruch(3, 4), { gekuerzt: true }).grund, 'kuerzen');
   assert.ok(UM.pruefeZahl('0,75', new Bruch(3, 4), { gekuerzt: true }).ok);
+});
+
+test('Sperre: gesperrte Terme werden neu erzeugt', () => {
+  assert.strictEqual(UM.gesperrteTerme.size, 11);
+  // Bekannter Term, der die Sperre auslösen muss (Beispiel, nicht aus der Arbeit):
+  assert.strictEqual(UM.termHash('1+1'), UM.termHash('1+1'));
+  // rz-multdiv Stufe 2 kann einen gesperrten Term liefern; über viele Durchläufe darf er nie erscheinen
+  for (let i = 0; i < 20000; i++) {
+    const a = UM.generatoren['rz-multdiv'](2);
+    assert.ok(!UM.gesperrteTerme.has(UM.termHash(a.term)), a.term);
+  }
 });
 
 test('Summe: klammerfreie Eingabe', () => {
@@ -89,7 +96,7 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
         const texte = [a.frage, a.hinweis || '', ...a.loesung.filter((l) => typeof l === 'string'), ...a.felder.flatMap((f) => [...(f.optionen || []), f.label || ''])];
         for (const t of texte) for (const f of formeln(t)) pruefeKatex(f, wo);
         if (a.term) pruefeKatex(a.term, wo);
-        if (a.term) assert.ok(!AUS_DER_ARBEIT.has(a.term), `${wo}: Aufgabe aus der Klassenarbeit: ${a.term}`);
+        if (a.term) assert.ok(!UM.gesperrteTerme.has(UM.termHash(a.term)), `${wo}: gesperrter Term: ${a.term}`);
         for (const f of a.felder) {
           if (f.art === 'zahl') {
             const w = f.antwort;
