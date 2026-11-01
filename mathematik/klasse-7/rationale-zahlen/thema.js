@@ -1,6 +1,7 @@
 /*
  * Thema: Rationale Zahlen (Klasse 7) – Vorbereitung auf die Klassenarbeit Nr. 1
- * Die Kompetenzen folgen der Checkliste, die die Klasse erhält.
+ * zeilen = die Zeilen der Checkliste genau wie auf dem Kompetenzbogen; jede Zeile bekommt
+ * eine eigene Selbsteinschätzung. Zeilen, die mit „…“ zusammenhängen, gehören zu einer Kompetenz.
  * gen = Name eines Generators aus assets/js/generatoren/rationale-zahlen.js
  */
 (function (global) {
@@ -18,8 +19,10 @@
     kompetenzen: [
       {
         id: 'zahlenmengen',
-        text: 'Ich kenne die Symbole und die Namen der Zahlenmengen und …',
-        unterpunkte: ['ich kann entscheiden, zu welchen Zahlenmengen eine Zahl gehört.'],
+        zeilen: [
+          'Ich kenne die Symbole und die Namen der Zahlenmengen und …',
+          '… ich kann entscheiden, zu welchen Zahlenmengen eine Zahl gehört.',
+        ],
         buch: 'S. 8 bis 15',
         uebungen: [
           { gen: 'rz-mengen', titel: 'Zahlen den Zahlenmengen ℕ, ℤ und ℚ zuordnen' },
@@ -28,7 +31,9 @@
       },
       {
         id: 'zahlenstrahl',
-        text: 'Ich kann rationale Zahlen am Zahlenstrahl einzeichnen.',
+        zeilen: [
+          'Ich kann rationale Zahlen am Zahlenstrahl einzeichnen.',
+        ],
         buch: 'S. 8 bis 15',
         uebungen: [
           { gen: 'rz-strahl-setzen', titel: 'Zahlen am Zahlenstrahl einzeichnen' },
@@ -46,14 +51,19 @@
       },
       {
         id: 'gegenzahl-betrag',
-        text: 'Ich weiß, wie man die Gegenzahl zu einer Zahl findet und wie man den Betrag einer Zahl bestimmt.',
+        zeilen: [
+          'Ich weiß, wie man die Gegenzahl zu einer Zahl findet.',
+          'Ich weiß, wie man den Betrag einer Zahl bestimmt.',
+        ],
         buch: 'S. 8 bis 15',
         uebungen: [{ gen: 'rz-gegenzahl-betrag', titel: 'Gegenzahl und Betrag' }],
         links: [link('Gegenzahl', 'Klasse6/gegenzahl/gegenzahl.php'), link('Betrag', 'Klasse6/gegenzahl/absoluterbetrag.php')],
       },
       {
         id: 'ganze-zahlen',
-        text: 'Ich kann ganze Zahlen addieren und subtrahieren und die Rechnungen mit Guthaben und Schulden erklären.',
+        zeilen: [
+          'Ich kann ganze Zahlen addieren und subtrahieren und die Rechnungen mit Guthaben und Schulden erklären.',
+        ],
         buch: 'S. 16 bis 25',
         uebungen: [
           { gen: 'rz-nebenrechnung', titel: 'Vorzeichen, Nebenrechnung, Ergebnis' },
@@ -74,8 +84,10 @@
       },
       {
         id: 'addieren-subtrahieren',
-        text: 'Ich kann Additionen und Subtraktionen von rationalen Zahlen ohne Klammern schreiben und …',
-        unterpunkte: ['ich kann rationale Zahlen addieren und subtrahieren, indem ich eine Nebenrechnung nutze.'],
+        zeilen: [
+          'Ich kann Additionen und Subtraktionen von rationalen Zahlen ohne Klammern schreiben und …',
+          '… ich kann rationale Zahlen addieren und subtrahieren, indem ich eine Nebenrechnung nutze.',
+        ],
         buch: 'S. 16 bis 25',
         uebungen: [
           { gen: 'rz-klammerfrei', titel: 'Ohne Klammern schreiben und berechnen' },
@@ -84,8 +96,10 @@
       },
       {
         id: 'multiplizieren-dividieren',
-        text: 'Ich kann bei Multiplikation und Division von rationalen Zahlen entscheiden, welches Vorzeichen das Ergebnis hat und …',
-        unterpunkte: ['ich kann rationale Zahlen (also auch Dezimalzahlen und Brüche) multiplizieren und dividieren.'],
+        zeilen: [
+          'Ich kann bei Multiplikation und Division von rationalen Zahlen entscheiden, welches Vorzeichen das Ergebnis hat und …',
+          '… ich kann rationale Zahlen (also auch Dezimalzahlen und Brüche) multiplizieren und dividieren.',
+        ],
         buch: 'S. 26 bis 30',
         uebungen: [
           { gen: 'rz-vorzeichen', titel: 'Welches Vorzeichen hat das Ergebnis?' },
@@ -103,9 +117,9 @@
       },
       {
         id: 'rechengesetze',
-        text: 'Ich kenne die Minusklammerregel, Assoziativ-, Kommutativ- und Distributivgesetz und …',
-        unterpunkte: [
-          'ich kann diese Regeln nutzen, um Rechenvorteile beim Berechnen von Termen zu haben.',
+        zeilen: [
+          'Ich kenne die Minusklammerregel, Assoziativ-, Kommutativ- und Distributivgesetz und …',
+          '… ich kann diese Regeln nutzen, um Rechenvorteile beim Berechnen von Termen zu haben.',
           'Insbesondere kann ich das Distributivgesetz benutzen, um auszuklammern oder auszumultiplizieren.',
         ],
         buch: 'S. 31 bis 41',
@@ -117,12 +131,16 @@
       },
       {
         id: 'gemischt',
-        text: 'Ich kann auch Terme mit Brüchen und Dezimalzahlen gemischt berechnen.',
+        zeilen: [
+          'Ich kann auch Terme mit Brüchen und Dezimalzahlen gemischt berechnen.',
+        ],
         uebungen: [{ gen: 'rz-gemischt', titel: 'Brüche und Dezimalzahlen gemischt' }],
       },
       {
         id: 'begruenden',
-        text: 'Ich kann Aussagen über rationale Zahlen beurteilen und begründen.',
+        zeilen: [
+          'Ich kann Aussagen über rationale Zahlen beurteilen und begründen.',
+        ],
         uebungen: [{ gen: 'rz-aussagen', titel: 'Stimmt die Aussage?' }],
       },
     ],

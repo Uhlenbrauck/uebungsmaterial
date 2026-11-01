@@ -135,3 +135,11 @@ test('Fehler finden: Aufgabe ist wirklich falsch, Lösung richtig', () => {
     assert.ok(Math.abs(texWert(links) - f.w.zahl()) < 1e-9, f.tex);
   }
 });
+
+test('Thema: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren', () => {
+  const UMt = lade(...ALLE, 'mathematik/klasse-7/rationale-zahlen/thema.js');
+  for (const k of UMt.thema.kompetenzen) {
+    assert.ok(Array.isArray(k.zeilen) && k.zeilen.length > 0, k.id);
+    for (const u of k.uebungen) assert.ok(UMt.generatoren[u.gen], `${k.id}: ${u.gen} fehlt`);
+  }
+});

@@ -49,22 +49,28 @@
 
     // ---------- Checkliste ----------
     function checkliste() {
-      const liste = el('ol', { class: 'checkliste' });
+      const liste = el('div', { class: 'checkliste' });
       for (const k of thema.kompetenzen) {
-        const wahl = el('div', { class: 'smileys', role: 'radiogroup', 'aria-label': 'Selbsteinschätzung' },
-          ...SMILEYS.map(([z, t], i) => {
-            const b = el('button', { type: 'button', class: 'smiley' + (s.daten.selbst[k.id] === i ? ' aktiv' : ''), title: t, 'aria-label': t, 'aria-pressed': s.daten.selbst[k.id] === i ? 'true' : 'false' }, z);
-            b.addEventListener('click', () => {
-              s.daten.selbst[k.id] = i;
-              s.sichern();
-              wahl.querySelectorAll('.smiley').forEach((x, j) => { x.classList.toggle('aktiv', i === j); x.setAttribute('aria-pressed', String(i === j)); });
-            });
-            return b;
-          }));
-        liste.append(el('li', {},
-          el('div', { class: 'ck-text' }, el('span', { html: k.text }), ...(k.unterpunkte || []).map((u) => el('div', { class: 'ck-unter', html: '… ' + u }))),
-          wahl,
-          el('a', { class: 'knopf klein', href: '#' + k.id }, 'Üben ↓')));
+        const gruppe = el('div', { class: 'ck-gruppe' });
+        k.zeilen.forEach((zeile, z) => {
+          const id = `${k.id}#${z}`;
+          const wahl = el('div', { class: 'smileys', role: 'radiogroup', 'aria-label': 'Selbsteinschätzung' },
+            ...SMILEYS.map(([sym, t], i) => {
+              const aktiv = s.daten.selbst[id] === i;
+              const b = el('button', { type: 'button', class: 'smiley' + (aktiv ? ' aktiv' : ''), title: t, 'aria-label': t, 'aria-pressed': String(aktiv) }, sym);
+              b.addEventListener('click', () => {
+                s.daten.selbst[id] = i;
+                s.sichern();
+                wahl.querySelectorAll('.smiley').forEach((x, j) => { x.classList.toggle('aktiv', i === j); x.setAttribute('aria-pressed', String(i === j)); });
+              });
+              return b;
+            }));
+          gruppe.append(el('div', { class: 'ck-zeile' },
+            el('div', { class: 'ck-text', html: zeile }),
+            wahl,
+            z === 0 ? el('a', { class: 'knopf klein', href: '#' + k.id }, 'Üben ↓') : el('span')));
+        });
+        liste.append(gruppe);
       }
       return el('section', { class: 'kasten', id: 'checkliste' }, el('h2', {}, 'Checkliste: Das muss ich können'), liste);
     }
@@ -75,8 +81,8 @@
         k.buch ? el('span', {}, '📘 Buch ' + k.buch) : null,
         ...(k.links || []).map((l) => el('a', { href: l.url, target: '_blank', rel: 'noopener' }, '↗ ' + l.titel)));
       return el('section', { class: 'kompetenz', id: k.id },
-        el('h2', {}, el('span', { class: 'nr' }, String(nr + 1)), el('span', { html: k.text })),
-        (k.unterpunkte || []).length ? el('ul', { class: 'unterpunkte' }, ...k.unterpunkte.map((u) => el('li', { html: u }))) : null,
+        el('h2', {}, el('span', { class: 'nr' }, String(nr + 1)), el('span', { html: k.zeilen[0] })),
+        k.zeilen.length > 1 ? el('ul', { class: 'unterpunkte' }, ...k.zeilen.slice(1).map((u) => el('li', { html: u }))) : null,
         info.children.length ? info : null,
         ...k.uebungen.map((u) => uebungKarte(k, u)));
     }
@@ -169,7 +175,7 @@
             el('h3', {}, `Ergebnis: ${richtig} von ${eintraege.length} Aufgaben richtig`),
             noch.length
               ? el('div', {}, el('p', {}, 'Diese Punkte solltest du noch einmal üben:'),
-                  el('ul', {}, ...noch.map(([k]) => el('li', {}, el('a', { href: '#' + k.id, html: k.text })))))
+                  el('ul', {}, ...noch.map(([k]) => el('li', {}, el('a', { href: '#' + k.id, html: k.zeilen.join(' ') })))))
               : el('p', {}, 'Super! Du hast alles richtig. Übe zur Sicherheit noch ein paar Aufgaben der Stufe 3.'),
             el('p', {}, 'Unter jeder Aufgabe findest du jetzt die Lösung.'),
           );
