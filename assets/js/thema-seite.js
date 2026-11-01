@@ -42,6 +42,10 @@
   const uebungId = (u) => 'uebung-' + u.gen;
   const ampel = (n) => el('span', { class: 'ampel ' + STUFEN[n - 1][1], 'aria-hidden': 'true' });
 
+  /** Hinweis zum Datenschutz, an mehreren Stellen der Seite */
+  const datenschutz = (text) => el('p', { class: 'datenschutz' }, el('span', { class: 'schloss', 'aria-hidden': 'true' }, '🔒'), el('span', {}, ...text));
+  const DS_KURZ = ['Deine Eingaben bleiben nur in diesem Browser auf diesem Gerät. ', el('b', {}, 'Es wird nichts übertragen – auch dein Lehrer sieht deine Ergebnisse und Einschätzungen nicht.')];
+
   function starte(thema) {
     const s = speicher(thema.id);
     const haupt = document.getElementById('inhalt');
@@ -52,6 +56,7 @@
       el('header', { class: 'kopf' }, el('h1', {}, thema.titel), thema.untertitel ? el('p', { class: 'untertitel' }, thema.untertitel) : null),
       el('section', { class: 'kasten anleitung' },
         el('h2', {}, 'So übst du mit dieser Seite'),
+        datenschutz(['Diese Seite ist nur für dich zum Üben. ', el('b', {}, 'Nichts von dem, was du hier eingibst, löst oder einschätzt, wird übertragen – weder an deinen Lehrer noch an jemand anderen.'), ' Es wird nichts benotet. Dein Fortschritt wird nur in diesem Browser auf diesem Gerät gemerkt.']),
         el('ol', {},
           el('li', {}, el('b', {}, 'Vorher einschätzen: '), 'Gehe die Checkliste durch und schätze dich bei jeder Zeile ehrlich ein (Zeile „vorher“). Dort findest du auch, wo du im Notizbuch und im Buch nachlesen kannst.'),
           el('li', {}, el('b', {}, 'Üben: '), 'Übe vor allem die Punkte, bei denen du unsicher bist – mit den Übungen auf dieser Seite und den Übungen auf Realmath. Die Aufgaben auf dieser Seite werden jedes Mal neu erzeugt, du kannst also beliebig oft üben.'),
@@ -65,7 +70,7 @@
       ...thema.kompetenzen.map(kompetenzAbschnitt),
       testAbschnitt(),
       lernstand(),
-      el('footer', { class: 'fuss' }, 'Dein Fortschritt wird nur in diesem Browser gespeichert. Es werden keine Daten übertragen.'),
+      el('footer', { class: 'fuss' }, '🔒 ', ...DS_KURZ, ' Diese Seite lädt nichts von fremden Servern. Für Realmath und OneNote, die du über Links öffnest, gelten deren eigene Regeln.'),
     );
     mathe(haupt);
 
@@ -137,6 +142,7 @@
       });
       return el('section', { class: 'kasten', id: 'checkliste' },
         el('h2', {}, 'Checkliste: Das muss ich können'),
+        datenschutz(['Deine Einschätzung ist nur für dich. ', el('b', {}, 'Sie wird nicht übertragen, dein Lehrer sieht sie nicht.'), ' Sei also ruhig ehrlich zu dir selbst.']),
         el('div', { class: 'tabelle-scroll' }, tabelle),
         thema.kompetenzen.some((k) => k.zusatz) ? el('p', { class: 'leise klein' }, 'Grau hinterlegt: zusätzliche Übung, steht nicht auf dem Kompetenzbogen.') : null,
         thema.kurs ? el('p', { class: 'leise klein' }, `Die Notizbuch-Links führen in das Klassennotizbuch ${thema.kurs} und funktionieren nur, wenn du mit deinem Schulkonto angemeldet bist.`) : null);
@@ -203,6 +209,7 @@
       start.addEventListener('click', baueTest);
       return el('section', { class: 'kasten test', id: 'abschlusstest' },
         el('h2', {}, 'Abschlusstest'),
+        datenschutz(['Der Test wird nicht benotet. ', el('b', {}, 'Dein Ergebnis wird nicht übertragen, dein Lehrer sieht es nicht.'), ' Er zeigt nur dir, was du noch üben solltest.']),
         el('p', {}, `Zu jedem Punkt der Checkliste bekommst du ${thema.test.anzahlProKompetenz === 1 ? 'eine Aufgabe' : thema.test.anzahlProKompetenz + ' Aufgaben'}. Die Aufgaben sind mittel (gelb) oder schwierig (rot). Bearbeite alle Aufgaben ohne Hilfe – Nebenrechnungen ins Heft oder auf das iPad – und klicke dann auf „Auswerten“. Danach siehst du, was du noch üben solltest. Jeder Test ist neu zusammengestellt.`),
         start, flaeche);
 
@@ -323,6 +330,7 @@
       zeichne();
       return el('section', { class: 'kasten', id: 'lernstand' },
         el('h2', {}, 'Mein Lernstand'),
+        datenschutz(['Dein Lernstand ist nur in diesem Browser gespeichert. ', el('b', {}, 'Dein Lehrer sieht ihn nur, wenn du das PDF selbst in dein Notizbuch legst'), ' – dort kann er es wie alle deine Notizbuchseiten sehen.']),
         el('p', { class: 'nicht-druck' }, 'Hier siehst du deine Einschätzung vorher und nachher, wie viele Übungen du gelöst hast und deine Abschlusstests. ',
           el('b', {}, 'Sichere deinen Lernstand als PDF in deinem Notizbuch'), ' – im Browser gespeicherte Daten können verloren gehen (z. B. wenn du die Seite länger nicht besuchst oder ein anderes Gerät nutzt).'),
         el('details', { class: 'nicht-druck anleitung-pdf' }, el('summary', {}, 'So legst du das PDF in OneNote ab'),

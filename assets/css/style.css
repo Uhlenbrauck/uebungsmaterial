@@ -262,3 +262,8 @@ table.mengen td.falsch { background: var(--falsch-hell); }
   body.druck-lernstand .ampel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body.druck-lernstand tbody.ls-gruppe { break-inside: avoid; }
 }
+
+/* Hinweis zum Datenschutz */
+.datenschutz { display: flex; gap: .5rem; align-items: flex-start; background: #eef7f1; border: 1px solid #b7dcc3; border-radius: 8px; padding: .5rem .75rem; font-size: .93rem; margin: .4rem 0 .8rem; }
+.datenschutz .schloss { flex: none; }
+@media print { body.druck-lernstand .datenschutz { display: none; } }
