@@ -45,9 +45,10 @@ tests/                         node --test, prüft alle Generatoren
 
 ## Veröffentlichen mit GitHub Pages
 
-Einmalig im Repo auf GitHub: **Settings → Pages → Build and deployment → Source: „Deploy from a branch“,
-Branch: `main`, Ordner: `/ (root)` → Save.** Nach etwa einer Minute ist die Seite unter
-`https://uhlenbrauck.github.io/uebungsmaterial/` erreichbar. Jede Änderung auf `main` wird automatisch veröffentlicht.
+Einmalig im Repo auf GitHub: **Settings → Pages → Build and deployment → Source: „GitHub Actions“.**
+Der Workflow `.github/workflows/pages.yml` prüft bei jeder Änderung auf `main` die Tests und veröffentlicht
+dann die Seite unter `https://uhlenbrauck.github.io/uebungsmaterial/` (Tests rot → keine Veröffentlichung).
+Von Hand neu veröffentlichen: Actions → „Seite veröffentlichen“ → „Run workflow“.
 
 Lokal ansehen: `index.html` per Doppelklick im Browser öffnen.
 
