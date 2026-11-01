@@ -228,3 +228,37 @@ table.mengen td.falsch { background: var(--falsch-hell); }
 }
 .eingabe.breit { width: 15rem; }
 .notiz { background: #eef3fb; border-left: 4px solid var(--akzent); padding: .4rem .8rem; border-radius: 0 8px 8px 0; font-size: .95rem; }
+
+/* Einschätzung vorher / nachher */
+.einschaetzung { display: flex; flex-direction: column; gap: .15rem; }
+.smiley-zeile { display: flex; align-items: center; gap: .3rem; }
+.smiley-zeile .zp { font-size: .72rem; color: var(--leise); width: 3.6rem; text-align: right; }
+.smiley-zeile.nachher .zp { color: var(--akzent); font-weight: 600; }
+
+/* Mein Lernstand */
+.ls-tabelle { width: 100%; border-collapse: collapse; font-size: .9rem; margin: .5rem 0; }
+.ls-tabelle th { background: var(--akzent-hell); text-align: left; padding: .35rem .5rem; border: 1px solid var(--linie); }
+.ls-tabelle td { border: 1px solid var(--linie); padding: .3rem .5rem; vertical-align: top; }
+.ls-tabelle tbody.ls-gruppe { border-top: 3px solid #b9c6dc; }
+.ls-tabelle .mitte { text-align: center; vertical-align: middle; }
+.ls-smiley { font-size: 1.2rem; }
+.ls-geloest { white-space: nowrap; font-size: .85rem; }
+.ok-text { color: var(--ok); font-weight: 600; }
+.falsch-text { color: var(--falsch); font-weight: 600; }
+.rueckfrage { display: inline-flex; align-items: center; gap: .3rem; font-size: .9rem; }
+.rueckfrage[hidden] { display: none; }
+.anleitung-pdf { margin: .3rem 0 .6rem; font-size: .92rem; }
+.anleitung-pdf summary { cursor: pointer; color: var(--akzent); }
+.nur-druck { display: none; }
+.ls-kopf { font-size: 1rem; }
+
+@media print {
+  body.druck-lernstand .seite > *:not(#lernstand) { display: none !important; }
+  body.druck-lernstand #lernstand { border: 0; padding: 0; margin: 0; }
+  body.druck-lernstand .nicht-druck { display: none !important; }
+  body.druck-lernstand .nur-druck { display: block; }
+  body.druck-lernstand .ls-tabelle { font-size: 10pt; }
+  body.druck-lernstand .ls-tabelle th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.druck-lernstand .ampel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.druck-lernstand tbody.ls-gruppe { break-inside: avoid; }
+}
