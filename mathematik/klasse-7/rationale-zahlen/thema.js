@@ -265,8 +265,8 @@
         "notizbuchUeben": [
           {
             "titel": "Realmath Addieren & Subtrahieren",
-            "onenote": "onenote:https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/Documents/OneNote%20Notizbücher/Mathematik%2007/_2026-27/07a/7.1%20Rationale%20Zahlen.one#|%20Realmath%20Addieren%20%20Subtrahieren&section-id={634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2}&page-id={4144F27A-0190-4A16-ADEC-AF6D8ADE6A6A}&end",
-            "web": "https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/_layouts/Doc.aspx?sourcedoc={4CD9181F-4FBC-447F-A857-0D4FA29C5332}&wd=target%28_2026-27%2F07a%2F7.1%20Rationale%20Zahlen.one%7C634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2%2F%5C%7C%20Realmath%20Addieren%20%26%20Subtrahieren%7C4144F27A-0190-4A16-ADEC-AF6D8ADE6A6A%2F%29&wdpartid={C5866FA7-00AC-44FA-80EE-4B439FBDCC4A}{1}&wdsectionfileid={AA399844-3520-4FF6-A98C-B9795DB86DE0}&end"
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_7a_M_Uhl/SiteAssets/2026_27_7a_M_Uhl-Notizbuch/_Inhaltsbibliothek/7.1%20Rationale%20Zahlen.one#|%20Realmath%20Addieren%20%20Subtrahieren&section-id={BCE4631D-C09F-4CBE-BFDC-4EF4852EDEA0}&page-id={2C6F7A99-E6F6-46B5-8C8D-3DB6B87521FE}&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_7a_M_Uhl/_layouts/Doc.aspx?sourcedoc={7543C0CD-D124-434A-B56F-360EEF25627B}&wd=target%28_Inhaltsbibliothek%2F7.1%20Rationale%20Zahlen.one%7CBCE4631D-C09F-4CBE-BFDC-4EF4852EDEA0%2F%5C%7C%20Realmath%20Addieren%20%26%20Subtrahieren%7C2C6F7A99-E6F6-46B5-8C8D-3DB6B87521FE%2F%29&wdpartid={E984AB26-6E43-4322-B10A-73F1DD4DAD13}{1}&wdsectionfileid={E5099CE2-696A-438D-9244-3ADFE6610E7C}&end"
           }
         ]
       },
@@ -341,9 +341,9 @@
         ],
         "notizbuchUeben": [
         {
-          "titel": "Realmath Multiplizieren und Dividieren",
-          "onenote": "onenote:https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/Documents/OneNote%20Notizbücher/Mathematik%2007/_2026-27/07a/7.1%20Rationale%20Zahlen.one#|%20Realmath%20Multiplizieren%20und%20Dividieren&section-id={634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2}&page-id={F054C378-D4BD-8742-BDAC-3CD0D3DE04E9}&end",
-          "web": "https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/_layouts/Doc.aspx?sourcedoc={4CD9181F-4FBC-447F-A857-0D4FA29C5332}&wd=target%28_2026-27%2F07a%2F7.1%20Rationale%20Zahlen.one%7C634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2%2F%5C%7C%20Realmath%20Multiplizieren%20und%20Dividieren%7CF054C378-D4BD-8742-BDAC-3CD0D3DE04E9%2F%29&wdpartid={E55D0379-FA1E-C00D-0578-1801EF49C6D2}{1}&wdsectionfileid={AA399844-3520-4FF6-A98C-B9795DB86DE0}&end"
+          "titel": "02.10. | Realmath Multiplizieren und Dividieren",
+          "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_7a_M_Uhl/SiteAssets/2026_27_7a_M_Uhl-Notizbuch/_Inhaltsbibliothek/7.1%20Rationale%20Zahlen.one#02.10.%20|%20Realmath%20Multiplizieren%20und%20Dividieren&section-id={BCE4631D-C09F-4CBE-BFDC-4EF4852EDEA0}&page-id={F97A5E29-F6DC-254D-83F6-D06258CD7D40}&end",
+          "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_7a_M_Uhl/_layouts/Doc.aspx?sourcedoc={7543C0CD-D124-434A-B56F-360EEF25627B}&wd=target%28_Inhaltsbibliothek%2F7.1%20Rationale%20Zahlen.one%7CBCE4631D-C09F-4CBE-BFDC-4EF4852EDEA0%2F02.10.%20%5C%7C%20Realmath%20Multiplizieren%20und%20Dividieren%7CF97A5E29-F6DC-254D-83F6-D06258CD7D40%2F%29&wdpartid={C1021202-E9DD-7407-1957-5EC747AF3BF2}{1}&wdsectionfileid={E5099CE2-696A-438D-9244-3ADFE6610E7C}&end"
         }
       ]
       },
