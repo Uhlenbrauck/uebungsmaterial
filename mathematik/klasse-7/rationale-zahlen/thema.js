@@ -261,6 +261,13 @@
               }
             ]
           }
+        ],
+        "notizbuchUeben": [
+          {
+            "titel": "Realmath Addieren & Subtrahieren",
+            "onenote": "onenote:https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/Documents/OneNote%20Notizbücher/Mathematik%2007/_2026-27/07a/7.1%20Rationale%20Zahlen.one#|%20Realmath%20Addieren%20%20Subtrahieren&section-id={634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2}&page-id={4144F27A-0190-4A16-ADEC-AF6D8ADE6A6A}&end",
+            "web": "https://fbgschwerte-my.sharepoint.com/personal/kai_uhlenbrauck_fbg_schwerte_de/_layouts/Doc.aspx?sourcedoc={4CD9181F-4FBC-447F-A857-0D4FA29C5332}&wd=target%28_2026-27%2F07a%2F7.1%20Rationale%20Zahlen.one%7C634FEB4B-5C10-45DE-9DD6-5CDC01FB3FC2%2F%5C%7C%20Realmath%20Addieren%20%26%20Subtrahieren%7C4144F27A-0190-4A16-ADEC-AF6D8ADE6A6A%2F%29&wdpartid={C5866FA7-00AC-44FA-80EE-4B439FBDCC4A}{1}&wdsectionfileid={AA399844-3520-4FF6-A98C-B9795DB86DE0}&end"
+          }
         ]
       },
       {
