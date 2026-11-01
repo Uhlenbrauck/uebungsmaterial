@@ -26,12 +26,16 @@ tests/                         node --test, prüft alle Generatoren
 
 ## Eine Themenseite
 
-1. **Checkliste** – die Kompetenzen aus dem Kompetenzbogen, mit Selbsteinschätzung (😰 🙁 🙂 😄).
+1. **Checkliste** – die Kompetenzen mit allen Spalten des Kompetenzbogens; Selbsteinschätzung (😰 🙁 🙂 😄)
+   je Zeile **vorher** und **nachher**.
 2. **Übungen** je Kompetenz in drei Stufen. Aufgaben werden bei jedem Klick neu erzeugt, sofort geprüft, mit Tipp und
    Lösungsweg. Bei Zahleingaben werden ganze Zahlen, Dezimalzahlen, Brüche und gemischte Zahlen exakt verglichen;
    wo verlangt, muss ein Bruch vollständig gekürzt sein.
 3. **Abschlusstest** – je Kompetenz eine zufällige Aufgabe (Stufe 2 oder 3). Nach dem Auswerten werden die Lösungen
-   angezeigt und die Kompetenzen verlinkt, die noch geübt werden sollten.
+   angezeigt und die Kompetenzen verlinkt, die noch geübt werden sollten. Jeder Versuch wird gespeichert.
+4. **Mein Lernstand** – vorher/nachher, gelöste Übungen je Ampelstufe, letzter Test und alle Testversuche;
+   als PDF speicherbar (Druckansicht), damit die Schüler ihn im Klassennotizbuch ablegen. Der Name wird nur
+   für den Ausdruck eingetragen und nicht gespeichert.
 
 ## Neues Thema anlegen
 
