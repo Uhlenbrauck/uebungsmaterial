@@ -44,23 +44,31 @@
     unlesbar: 'Diese Eingabe verstehe ich nicht. Beispiele: −3,5 oder −7/4 oder −1 3/4',
     falsch: 'Das stimmt noch nicht.',
     kuerzen: 'Der Wert stimmt, aber der Bruch ist noch nicht vollständig gekürzt.',
+    klammer: 'Schreibe die Rechnung ganz ohne Klammern, z. B. −3 + 5 − 2,5',
+    summeUnlesbar: 'Schreibe nur Zahlen mit + und −, z. B. −3 + 5 − 2,5',
     leer: 'Hier fehlt noch etwas.',
   };
 
   // ---------- Felder ----------
-  function zahlFeld(f, kontext) {
+  function zahlFeld(f, kontext, summe = false) {
     const input = el('input', {
       type: 'text', class: 'eingabe', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
-      inputmode: 'text', 'aria-label': f.label || 'Ergebnis',
+      inputmode: 'text', 'aria-label': (f.label || 'Ergebnis').replace(/\$/g, ''),
     });
+    if (summe) input.classList.add('breit');
     input.addEventListener('focus', () => { kontext.letztesFeld = input; });
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') kontext.enter(); });
-    const zeile = el('label', { class: 'feld' }, f.label ? el('span', { class: 'feld-label' }, f.label + ':') : null, input, f.einheit ? el('span', { class: 'einheit' }, f.einheit) : null);
+    const label = f.label ? mathe(el('span', { class: 'feld-label', html: /=\$$/.test(f.label) ? f.label : f.label + ':' })) : null;
+    const zeile = el('label', { class: 'feld' }, label, input, f.einheit ? el('span', { class: 'einheit' }, f.einheit) : null);
     const meldung = el('div', { class: 'feld-meldung' });
     return {
       knoten: el('div', { class: 'feld-block' }, zeile, meldung),
       pruefen() {
         if (!input.value.trim()) return zeige(false, MELDUNG.leer);
+        if (summe) {
+          const r = UM.pruefeSumme(input.value, f.antwort);
+          return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund === 'unlesbar' ? 'summeUnlesbar' : r.grund]);
+        }
         const r = UM.pruefeZahl(input.value, f.antwort, { gekuerzt: f.gekuerzt });
         return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund]);
       },
@@ -171,9 +179,9 @@
     const modus = optionen.modus || 'uebung';
     const kontext = { letztesFeld: null, enter: () => pruefen() };
     const felder = aufgabe.felder.map((f) =>
-      f.art === 'zahl' ? zahlFeld(f, kontext) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
+      f.art === 'zahl' ? zahlFeld(f, kontext) : f.art === 'summe' ? zahlFeld(f, kontext, true) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
     );
-    const hatZahl = aufgabe.felder.some((f) => f.art === 'zahl');
+    const hatZahl = aufgabe.felder.some((f) => f.art === 'zahl' || f.art === 'summe');
     const rueck = el('div', { class: 'rueckmeldung', 'aria-live': 'polite' });
     const loesung = el('div', { class: 'loesung', hidden: true });
     const tipp = el('div', { class: 'tipp', hidden: true }, aufgabe.hinweis ? mathe(el('p', { html: '💡 ' + aufgabe.hinweis })) : null);
@@ -206,6 +214,7 @@
         mathe(el('p', { class: 'frage', html: aufgabe.frage })),
         aufgabe.term ? formel(aufgabe.term) : null,
         aufgabe.bild ? el('div', { class: 'bild', html: aufgabe.bild }) : null,
+        aufgabe.notiz ? el('p', { class: 'notiz' }, '✏️ Schreibe deine Nebenrechnungen und Zwischenschritte auf – im Heft oder auf dem iPad. Gib dann hier das Ergebnis ein.') : null,
         el('div', { class: 'felder' }, ...felder.map((f) => f.knoten)),
         tastatur, knoepfe, tipp, rueck, loesung),
     );

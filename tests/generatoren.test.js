@@ -50,6 +50,16 @@ test('Bruch: Eingaben werden erkannt', () => {
   assert.ok(UM.pruefeZahl('0,75', new Bruch(3, 4), { gekuerzt: true }).ok);
 });
 
+test('Summe: klammerfreie Eingabe', () => {
+  const B = (z, n = 1) => new UM.Bruch(z, n);
+  assert.ok(UM.pruefeSumme('−3 + 5 − 2,5', [B(-3), B(5), B(-5, 2)]).ok);
+  assert.ok(UM.pruefeSumme('5-2,5-3', [B(-3), B(5), B(-5, 2)]).ok);
+  assert.strictEqual(UM.pruefeSumme('-3+(5)', [B(-3), B(5)]).grund, 'klammer');
+  assert.strictEqual(UM.pruefeSumme('-3--5', [B(-3), B(5)]).grund, 'unlesbar');
+  assert.strictEqual(UM.pruefeSumme('-3-5', [B(-3), B(5)]).grund, 'falsch');
+  assert.ok(UM.pruefeSumme('-1 1/2+3/4', [B(-3, 2), B(3, 4)]).ok);
+});
+
 test('Bruch: Dezimal- und TeX-Ausgabe', () => {
   const { Bruch } = UM;
   assert.strictEqual(new Bruch(-7, 4).dezText(), '-1,75');
@@ -76,7 +86,7 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
         const alles = JSON.stringify(a, (k, v) => (typeof v === 'string' && v.startsWith('<svg') ? '' : v));
         assert.ok(!/undefined|NaN|:null|\[object/.test(alles), `${wo}: ${alles}`);
         assert.ok(a.frage && a.felder.length && a.loesung.length, wo);
-        const texte = [a.frage, a.hinweis || '', ...a.loesung.filter((l) => typeof l === 'string'), ...a.felder.flatMap((f) => f.optionen || [])];
+        const texte = [a.frage, a.hinweis || '', ...a.loesung.filter((l) => typeof l === 'string'), ...a.felder.flatMap((f) => [...(f.optionen || []), f.label || ''])];
         for (const t of texte) for (const f of formeln(t)) pruefeKatex(f, wo);
         if (a.term) pruefeKatex(a.term, wo);
         if (a.term) assert.ok(!AUS_DER_ARBEIT.has(a.term), `${wo}: Aufgabe aus der Klassenarbeit: ${a.term}`);
@@ -91,6 +101,15 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
             if (a.term && f.label === 'Ergebnis' && name !== 'rz-fehler') {
               assert.ok(Math.abs(texWert(a.term) - w.zahl()) < 1e-9, `${wo}: ${a.term} = ${texWert(a.term)} ≠ ${w.text()}`);
             }
+          } else if (f.art === 'summe') {
+            assert.ok(Array.isArray(f.antwort) && f.antwort.length >= 2, wo);
+            assert.ok(UM.pruefeSumme(UM.summeText(f.antwort, 'bruch'), f.antwort).ok, `${wo}: ${UM.summeText(f.antwort)}`);
+            assert.ok(UM.pruefeSumme(UM.summeText(f.antwort.slice().reverse(), 'bruch'), f.antwort).ok, `${wo}: Reihenfolge`);
+            assert.ok(!UM.pruefeSumme(UM.summeText(f.antwort, 'bruch') + ' + 1', f.antwort).ok, wo);
+            // Die Summe hat denselben Wert wie das Ergebnis
+            const ergebnis = a.felder.filter((x) => x.art === 'zahl').pop();
+            const summe = f.antwort.reduce((x, y) => x.plus(y), new UM.Bruch(0));
+            assert.ok(summe.gleich(ergebnis.antwort), `${wo}: Summe ${summe} ≠ ${ergebnis.antwort}`);
           } else if (f.art === 'auswahl') {
             assert.ok(Number.isInteger(f.richtig) && f.richtig >= 0 && f.richtig < f.optionen.length, wo);
             assert.strictEqual(new Set(f.optionen).size, f.optionen.length, `${wo}: doppelte Optionen`);
@@ -141,5 +160,7 @@ test('Thema: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren', 
   for (const k of UMt.thema.kompetenzen) {
     assert.ok(Array.isArray(k.zeilen) && k.zeilen.length > 0, k.id);
     for (const u of k.uebungen) assert.ok(UMt.generatoren[u.gen], `${k.id}: ${u.gen} fehlt`);
+    for (const n of [...(k.notizbuch || []), ...(k.notizbuchUeben || [])]) assert.ok(n.onenote.startsWith('onenote:') && (!n.web || n.web.startsWith('https://')), n.titel);
+    for (const g of k.realmath || []) for (const l of g.links) assert.ok(l.url.startsWith('https://realmath.de/'), l.url);
   }
 });

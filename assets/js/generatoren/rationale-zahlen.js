@@ -6,11 +6,13 @@
  *   frage    Text, Formeln in $…$
  *   term     optional: TeX, groß und zentriert
  *   bild     optional: SVG-Text
- *   felder   [{ art:'zahl', label, antwort:Bruch, gekuerzt, einheit }
+ *   felder   [{ art:'zahl', label, antwort:Bruch, gekuerzt, einheit }   label darf $…$ enthalten
+ *             { art:'summe', label, antwort:[Bruch] }               klammerfreie Summe (Zwischenschritt)
  *             { art:'auswahl', label, optionen:[…], richtig:index }
  *             { art:'strahl', cfg, ziel:Bruch, text }        (Zahlenstrahl anklicken)
  *             { art:'mengen', zahlen:[{ tex, N, Z, Q }] }]   (Tabelle ℕ/ℤ/ℚ)
  *   hinweis  optional: Tipp
+ *   notiz    optional: true → Aufforderung, Nebenrechnungen aufzuschreiben (Heft/iPad)
  *   loesung  [Text mit $…$ | { svg }]
  *
  * Die Aufgaben orientieren sich an Notizbuch und Kompetenzcheckliste,
@@ -267,7 +269,10 @@
     const zt = (x) => (stil === 'dezimal' && x.istEndlichDezimal() ? dzt(x) : x.tex());
     return {
       frage: `Welche Zahl liegt auf der Zahlengeraden genau in der Mitte zwischen ${$(zt(a))} und ${$(zt(b))}?`,
-      felder: [{ art: 'zahl', label: 'Mitte', antwort: mitte }],
+      felder: [
+        { art: 'zahl', label: 'Abstand der beiden Zahlen', antwort: abstand },
+        { art: 'zahl', label: 'Mitte', antwort: mitte },
+      ],
       hinweis: 'Bestimme den Abstand der beiden Zahlen und gehe von der kleineren Zahl aus den halben Abstand nach rechts.',
       loesung: [
         `Abstand: ${$(`${zt(b)}-${a.z < 0 ? `(${zt(a)})` : zt(a)}=${zt(abstand)}`)}`,
@@ -316,6 +321,7 @@
       term: tex(k),
       felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w }],
       hinweis: 'Arbeite von innen nach außen: Erst Beträge und innere Klammern, dann das Minus davor (Gegenzahl).',
+      notiz: true,
       loesung: [`${$(`${tex(k)}=${erg(w, true)}`)}`, 'Ein Minus vor einer Zahl oder Klammer bedeutet: Gegenzahl bilden. Der Betrag macht jede Zahl nicht-negativ.'],
     };
   };
@@ -407,10 +413,12 @@
     loesung.push(`Vorzeichen: ${wErg.z > 0 ? 'positiv' : 'negativ'}. ${nr.regel}`);
     loesung.push(`Nebenrechnung: ${$(`${nr.tex}=${wErg.abs().tex()}`)}`);
     loesung.push(`Ergebnis: ${$(`${klammerfrei}=${wErg.tex()}`)}`);
+    const mitKlammer = /\(/.test(tex(k));
     return {
-      frage: 'Berechne mit Vorzeichen und Nebenrechnung.',
+      frage: mitKlammer ? 'Schreibe die Rechnung ohne Klammern und berechne sie mit Vorzeichen und Nebenrechnung.' : 'Berechne mit Vorzeichen und Nebenrechnung.',
       term: tex(k),
       felder: [
+        ...(mitKlammer ? [{ art: 'summe', label: 'Ohne Klammern', antwort: [new Bruch(a), schritt] }] : []),
         { art: 'auswahl', label: 'Vorzeichen des Ergebnisses', optionen: ['+ (positiv)', '− (negativ)'], richtig: wErg.z > 0 ? 0 : 1 },
         { art: 'zahl', label: 'Nebenrechnung (Betrag)', antwort: wErg.abs() },
         { art: 'zahl', label: ERGEBNIS, antwort: wErg },
@@ -429,7 +437,10 @@
       const zeit = R.wahl([['Am Morgen', 'Bis zum Mittag', 'mittags'], ['Um 18 Uhr', 'Bis Mitternacht', 'um Mitternacht'], ['Bei Sonnenaufgang', 'Bis 10 Uhr', 'um 10 Uhr']]);
       return {
         frage: `${zeit[0]} zeigt das Thermometer ${t0.toString().replace('-', '−')} °C. ${zeit[1]} ${d > 0 ? 'steigt' : 'fällt'} die Temperatur um ${Math.abs(d)} °C. Welche Temperatur ist es ${zeit[2]}?`,
-        felder: [{ art: 'zahl', label: 'Temperatur', antwort: new Bruch(w), einheit: '°C' }],
+        felder: [
+          { art: 'summe', label: 'Rechnung (ohne Ergebnis)', antwort: [new Bruch(t0), new Bruch(d)] },
+          { art: 'zahl', label: 'Temperatur', antwort: new Bruch(w), einheit: '°C' },
+        ],
         hinweis: 'Steigen bedeutet Addieren, Fallen bedeutet Subtrahieren.',
         loesung: [$(`${t0}${d > 0 ? '+' : '-'}${Math.abs(d)}=${w}`) + ` Es sind ${$(String(w))} °C.`],
       };
@@ -441,7 +452,10 @@
       const w = k0 + ein - ab;
       return {
         frage: `Ein Konto hat einen Kontostand von ${String(k0).replace('-', '−')} €. Zuerst werden ${ein} € eingezahlt, danach werden ${ab} € abgebucht. Wie hoch ist der Kontostand danach?`,
-        felder: [{ art: 'zahl', label: 'Kontostand', antwort: new Bruch(w), einheit: '€' }],
+        felder: [
+          { art: 'summe', label: 'Rechnung (ohne Ergebnis)', antwort: [new Bruch(k0), new Bruch(ein), new Bruch(-ab)] },
+          { art: 'zahl', label: 'Kontostand', antwort: new Bruch(w), einheit: '€' },
+        ],
         hinweis: 'Einzahlen erhöht den Kontostand (+), Abbuchen verringert ihn (−). Ein negativer Kontostand bedeutet Schulden.',
         loesung: [$(`${k0}+${ein}-${ab}=${w}`) + ` Der Kontostand beträgt ${$(String(w))} €${w < 0 ? ', das Konto ist also im Minus' : ''}.`],
       };
@@ -456,6 +470,7 @@
         frage: `An einem Wintertag werden ${kalt} ${dzt(tk).replace('{,}', ',').replace('-', '−')} °C gemessen und ${warm} ${dzt(tw).replace('{,}', ',')} °C. Um wie viel Grad ist es ${warm} wärmer?`,
         felder: [{ art: 'zahl', label: 'Unterschied', antwort: diff, einheit: '°C' }],
         hinweis: 'Den Unterschied berechnest du mit „wärmere Temperatur minus kältere Temperatur“.',
+        notiz: true,
         loesung: [$(`${dzt(tw)}-(${dzt(tk)})=${dzt(tw)}+${dzt(tk.abs())}=${dzt(diff)}`) + ` Es ist ${$(dzt(diff))} °C wärmer.`],
       };
     }
@@ -467,6 +482,7 @@
       frage: `${unten} ${Math.abs(tief)} m unter dem Meeresspiegel (also bei ${String(tief).replace('-', '−')} m), ${oben} ${hoch} m darüber. Wie groß ist der Höhenunterschied?`,
       felder: [{ art: 'zahl', label: 'Höhenunterschied', antwort: new Bruch(diff), einheit: 'm' }],
       hinweis: 'Höhenunterschied = obere Höhe minus untere Höhe.',
+      notiz: true,
       loesung: [$(`${hoch}-(${tief})=${hoch}+${-tief}=${diff}`) + ` Der Höhenunterschied beträgt ${$(String(diff))} m.`],
     };
   };
@@ -514,7 +530,11 @@
     return {
       frage: `Schreibe den Term ohne Klammern und berechne ihn. ${stufe > 1 ? FORM_HINWEIS : ''}`,
       term: tex(k),
-      felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w, gekuerzt: true }],
+      felder: [
+        { art: 'summe', label: 'Ohne Klammern', antwort: summanden.slice() },
+        { art: 'zahl', label: ERGEBNIS, antwort: w, gekuerzt: true },
+      ],
+      notiz: stufe > 1,
       hinweis: 'Plus und Minus mit gleichem Zeichen in der Klammer ergeben +, verschiedene Zeichen ergeben −. Danach Schritt für Schritt mit Nebenrechnung rechnen.',
       loesung,
     };
@@ -555,6 +575,7 @@
         { art: 'zahl', label: 'Richtiges Ergebnis', antwort: f.w },
       ],
       hinweis: 'Rechne die Aufgabe selbst und vergleiche Schritt für Schritt.',
+      notiz: true,
       loesung: [FEHLER_TEXTE[f.f], `Richtig ist ${$(erg(f.w, f.tex.includes('{,}')))}.`],
     };
   };
@@ -625,6 +646,7 @@
       frage: `Berechne. ${stufe === 3 ? FORM_HINWEIS : ''}`,
       term: tex(k),
       felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w, gekuerzt: true }],
+      notiz: stufe === 3,
       hinweis: 'Bestimme zuerst das Vorzeichen (Anzahl der negativen Zahlen), dann rechne mit den Beträgen.' + (stufe === 3 ? ' Durch einen Bruch teilt man, indem man mit dem Kehrbruch multipliziert.' : ''),
       loesung: [
         `Vorzeichen: ${anzahlNeg} negative Zahl${anzahlNeg === 1 ? '' : 'en'} → ${w.z === 0 ? 'Ergebnis 0' : w.z > 0 ? 'positiv' : 'negativ'}.`,
@@ -652,6 +674,7 @@
     return {
       frage: `Auf ein Konto werden schon lange an jedem Monatsersten ${btxt} € ${ein ? 'eingezahlt' : 'abgebucht'}, und das soll auch weiter so geschehen. Heute ist der Kontostand ausgeglichen, er beträgt 0 €. Wie hoch ist der Kontostand ${zeitText}?`,
       felder: [{ art: 'zahl', label: 'Kontostand', antwort: w, einheit: '€' }],
+      notiz: true,
       hinweis: `Schreibe einen Produktterm: (Zeit) · (Kontobewegung). Die Zukunft ist positiv, die Vergangenheit negativ, Einzahlungen positiv, Abbuchungen negativ.`,
       loesung: [
         `Zeit: ${$(String(zeit))} Monat${Math.abs(zeit) === 1 ? '' : 'e'} (${zeit < 0 ? 'Vergangenheit' : 'Zukunft'}), Kontobewegung: ${$(euroTex(bew))} € (${ein ? 'Einzahlung' : 'Abbuchung'}).`,
@@ -700,7 +723,10 @@
     return {
       frage: 'Löse die Klammern auf und berechne.',
       term: tex(k),
-      felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w }],
+      felder: [
+        { art: 'summe', label: 'Ohne Klammern', antwort: aufgeloest.map((x) => Bruch.von(x)) },
+        { art: 'zahl', label: ERGEBNIS, antwort: w },
+      ],
       hinweis: 'Steht ein Minus vor der Klammer, werden beim Weglassen der Klammer alle Plus- und Minuszeichen in der Klammer umgedreht. Bei einem Plus vor der Klammer bleibt alles, wie es ist.',
       loesung: [
         `Klammern auflösen: ${$(`${tex(k)}=${term.summeTex(aufgeloest, stil)}`)}`,
@@ -713,6 +739,7 @@
   gen['rz-geschickt'] = (stufe) => {
     let k;
     let geschickt;
+    let zwischen;
     if (stufe === 1) {
       const rund = R.wahl([100, 100, 1000]);
       const a = R.int(rund / 20, rund - rund / 20);
@@ -722,6 +749,7 @@
       // v·a + b + v·c bzw. mit Minus
       k = v > 0 ? T.kette(Z(a), '+', Z(b), '+', Z(c)) : T.kette(Z(-a), '+', Z(b), '-', Z(c));
       geschickt = v > 0 ? `${a}+${c}+${b}=${rund}+${b}` : `-${a}-${c}+${b}=-${rund}+${b}`;
+      zwischen = new Bruch(v * rund);
     } else if (stufe === 2) {
       const paar = R.wahl([[25, 4], [5, 2], [125, 8], [50, 2], [20, 5]]);
       const p = paar[0] * paar[1];
@@ -729,6 +757,7 @@
       const s1 = R.vz();
       const s2 = R.vz();
       k = T.kette(Z(s1 * paar[0]), '*', Z(m), '*', Z(s2 * paar[1]));
+      zwischen = new Bruch(s1 * s2 * p);
       geschickt = `${tex(Z(s1 * paar[0]))}\\cdot ${tex(Z(s2 * paar[1]), false)}\\cdot ${tex(Z(m), false)}=${s1 * s2 * p}\\cdot ${tex(Z(m), false)}`;
     } else {
       if (R.int(0, 1)) {
@@ -737,6 +766,7 @@
         const v = R.vz();
         const zf1 = ZD(Bruch.dez(f1).mal(v));
         k = T.kette(zf1, '*', ZD(m), '*', ZD(Bruch.dez(f2)));
+        zwischen = Bruch.dez(f1).mal(Bruch.dez(f2)).mal(v);
         geschickt = `${tex(zf1)}\\cdot ${dzt(Bruch.dez(f2))}\\cdot ${tex(ZD(m), false)}=${dzt(Bruch.dez(f1).mal(Bruch.dez(f2)).mal(v))}\\cdot ${tex(ZD(m), false)}`;
       } else {
         const ganz = R.int(1, 9);
@@ -745,14 +775,18 @@
         const b = R.dez(9, 1);
         const v = R.vz();
         k = T.kette(ZD(a.mal(v)), '+', ZD(b), '+', ZD(c.mal(v)));
+        zwischen = new Bruch(ganz * v);
         geschickt = `${term.summeTex([a.mal(v), c.mal(v), b], 'dezimal')}=${term.summeTex([new Bruch(ganz * v), b], 'dezimal')}`;
       }
     }
     const w = wert(k);
     return {
-      frage: 'Berechne möglichst geschickt. Nutze Kommutativ- und Assoziativgesetz.',
+      frage: 'Berechne möglichst geschickt. Nutze Kommutativ- und Assoziativgesetz. Fasse zuerst die beiden Zahlen zusammen, die eine „runde“ Zahl ergeben.',
       term: tex(k),
-      felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w }],
+      felder: [
+        { art: 'zahl', label: 'Zwischenergebnis (die „runde“ Zahl)', antwort: zwischen },
+        { art: 'zahl', label: ERGEBNIS, antwort: w },
+      ],
       hinweis: 'Suche zwei Zahlen, die zusammen eine „runde“ Zahl ergeben (Summe) bzw. deren Produkt rund ist. Du darfst die Reihenfolge vertauschen, wenn du die Vorzeichen mitnimmst.',
       loesung: [`Umstellen: ${$(`${tex(k)}=${geschickt}`)}`, `Ergebnis: ${$(erg(w, true))}`],
     };
@@ -761,6 +795,8 @@
   gen['rz-distributiv'] = (stufe) => {
     let k;
     const schritte = [];
+    let zwischen = [];
+    let notiz = false;
     if (stufe === 1) {
       const a = R.wahl([-9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9]);
       const b = R.nz(-15, 15);
@@ -771,6 +807,10 @@
       const ab = T.mal(Z(a), Z(b));
       const ac = T.mal(Z(a), Z(c));
       schritte.push(`Ausmultiplizieren: ${$(`${tex(k)}=${tex(ab)}${o}${tex(ac, false)}`)}`);
+      zwischen = [
+        { art: 'zahl', label: $(`${tex(ab)}=`), antwort: wert(ab) },
+        { art: 'zahl', label: $(`${tex(ac)}=`), antwort: wert(ac) },
+      ];
       schritte.push($(`=${wert(ab).tex()}${o}${tex(Z(a * c), false)}`));
       return finish('Wende das Distributivgesetz an (ausmultiplizieren) und berechne.');
     }
@@ -783,6 +823,7 @@
       if (R.int(0, 1)) k = T.plus(T.mal(Z(b), Z(a)), T.mal(Z(c), Z(a)));
       schritte.push(`Gemeinsamer Faktor ${$(tex(Z(a)))} ausklammern: ${$(`${tex(k)}=${tex(Z(a))}\\cdot(${tex(Z(b))}+${tex(Z(c), false)})`)}`);
       schritte.push($(`=${tex(Z(a))}\\cdot ${tex(Z(rund), false)}`));
+      zwischen = [{ art: 'zahl', label: 'Wert der Klammer nach dem Ausklammern', antwort: new Bruch(rund) }];
       return finish('Klammere geschickt aus und berechne.');
     }
     if (R.int(0, 1)) {
@@ -794,6 +835,7 @@
       const v = R.vz();
       k = T.mal(Z(v * n), Z(m));
       const zer = `(${v * rund}${v * d > 0 ? '+' : '-'}${Math.abs(d)})`;
+      notiz = true;
       schritte.push(`Zerlegen: ${$(`${tex(k)}=${zer}\\cdot ${tex(Z(m), false)}`)}`);
       schritte.push($(`=${tex(T.mal(Z(v * rund), Z(m)))}${v * d > 0 ? '+' : '-'}${Math.abs(d)}\\cdot ${tex(Z(m), false)}=${v * rund * m}${v * d * m >= 0 ? '+' : '-'}${Math.abs(v * d * m)}`));
       return finish('Berechne geschickt, indem du einen Faktor zerlegst (z. B. 98 = 100 − 2) und das Distributivgesetz nutzt.');
@@ -806,6 +848,7 @@
     k = T.plus(T.mal(ZD(x), f), T.mal(ZD(y), f));
     schritte.push(`Ausklammern: ${$(`${tex(k)}=(${dzt(x)}+${dzt(y)})\\cdot ${tex(f, false)}`)}`);
     schritte.push($(`=${ganz}\\cdot ${tex(f, false)}`));
+    zwischen = [{ art: 'zahl', label: 'Wert der Klammer nach dem Ausklammern', antwort: new Bruch(ganz) }];
     return finish('Klammere geschickt aus und berechne.');
 
     function finish(frage) {
@@ -814,7 +857,8 @@
       return {
         frage,
         term: tex(k),
-        felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w }],
+        felder: [...zwischen, { art: 'zahl', label: ERGEBNIS, antwort: w }],
+        notiz,
         hinweis: 'Ausmultiplizieren: a·(b + c) = a·b + a·c. Ausklammern: a·b + a·c = a·(b + c). Achte auf die Vorzeichen!',
         loesung: schritte,
       };
@@ -849,6 +893,7 @@
       frage: `Berechne. ${FORM_HINWEIS}`,
       term: tex(k),
       felder: [{ art: 'zahl', label: ERGEBNIS, antwort: w, gekuerzt: true }],
+      notiz: true,
       hinweis: 'Wandle die Dezimalzahlen in Brüche um (z. B. 0,25 = 1/4). Punktrechnung vor Strichrechnung!',
       loesung: [`Umwandeln: ${$([...new Set(umwandeln)].join(',\\;'))}`, `${$(`${tex(k)}=${erg(w, true)}`)}`],
     };

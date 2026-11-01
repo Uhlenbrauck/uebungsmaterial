@@ -152,7 +152,54 @@
     return { ok: true };
   }
 
+  /**
+   * Liest eine klammerfreie Summe wie "−3 + 5 − 2,5" oder "-1/2+3/4-1 1/4".
+   * Rückgabe: Liste der Summanden mit Vorzeichen (Bruch) oder null.
+   */
+  function leseSumme(text) {
+    if (text == null) return null;
+    const s = String(text).replace(/[−–—]/g, '-').replace(/\u00a0/g, ' ').trim();
+    if (!s || /[()[\]]/.test(s)) return null;
+    const teile = s.match(/[+-]?[^+-]+/g);
+    if (!teile || teile.join('').replace(/\s/g, '') !== s.replace(/\s/g, '')) return null;
+    const summanden = [];
+    for (const t of teile) {
+      const e = leseEingabe(t.replace(/^([+-])\s+/, '$1'));
+      if (!e) return null;
+      summanden.push(e.wert);
+    }
+    return summanden;
+  }
+
+  /** Gleiche Summanden (Reihenfolge egal – Kommutativgesetz)? */
+  function pruefeSumme(eingabe, erwartet) {
+    if (/[()]/.test(String(eingabe))) return { ok: false, grund: 'klammer' };
+    const ist = leseSumme(eingabe);
+    if (!ist) return { ok: false, grund: 'unlesbar' };
+    const rest = erwartet.map(Bruch.von);
+    if (ist.length !== rest.length) return { ok: false, grund: 'falsch' };
+    for (const b of ist) {
+      const i = rest.findIndex((r) => r.gleich(b));
+      if (i < 0) return { ok: false, grund: 'falsch' };
+      rest.splice(i, 1);
+    }
+    return { ok: true };
+  }
+
+  /** Klartext einer Summe, z. B. [-3, 5] → "−3 + 5" */
+  function summeText(summanden, stil = 'bruch') {
+    return summanden
+      .map((b, i) => {
+        const t = Bruch.von(b).abs().text(stil);
+        return i === 0 ? (Bruch.von(b).z < 0 ? '−' : '') + t : (Bruch.von(b).z < 0 ? ' − ' : ' + ') + t;
+      })
+      .join('');
+  }
+
   UM.Bruch = Bruch;
+  UM.leseSumme = leseSumme;
+  UM.pruefeSumme = pruefeSumme;
+  UM.summeText = summeText;
   UM.ggT = ggT;
   UM.leseEingabe = leseEingabe;
   UM.pruefeZahl = pruefeZahl;

@@ -19,7 +19,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--flaeche); }
-.seite { max-width: 860px; margin: 0 auto; padding: 1rem 1rem 3rem; }
+.seite { max-width: 1000px; margin: 0 auto; padding: 1rem 1rem 3rem; }
 a { color: var(--akzent); }
 h1, h2, h3, h4 { line-height: 1.25; }
 h1 { font-size: 1.8rem; margin: .2rem 0; }
@@ -56,32 +56,58 @@ h1 { font-size: 1.8rem; margin: .2rem 0; }
 .abzeichen.neu { background: var(--ok-hell); color: var(--ok); }
 .abzeichen.geplant { background: #eee; color: var(--leise); }
 
-/* Checkliste: eine Zeile je Eintrag des Kompetenzbogens, Gruppen = zusammenhängende Einträge */
-.ck-gruppe { border-top: 1px solid var(--linie); padding: .3rem 0; }
-.ck-gruppe:first-child { border-top: 0; }
-.ck-zeile { display: grid; grid-template-columns: 1fr auto 4.6rem; gap: .4rem 1rem; align-items: center; padding: .3rem 0; }
-.smileys { display: flex; gap: .15rem; }
+/* Checkliste: Tabelle mit den Spalten des Kompetenzbogens */
+.ck-tabelle { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.ck-tabelle th { background: var(--akzent); color: #fff; text-align: left; padding: .5rem .6rem; font-weight: 600; }
+.ck-tabelle td { border: 1px solid var(--linie); padding: .5rem .6rem; vertical-align: top; }
+.ck-tabelle tbody.ck-gruppe { border-top: 3px solid #b9c6dc; }
+.ck-tabelle tbody.zusatz td { background: #f3f4f7; }
+.ck-text { width: 34%; }
+.ck-smileys { width: 1%; white-space: nowrap; }
+.ck-info { width: 25%; font-size: .88rem; }
+.ck-ueben { width: 30%; font-size: .88rem; }
+.ck-info a, .ck-ueben a { text-decoration: none; }
+.ck-info a:hover, .ck-ueben a:hover { text-decoration: underline; }
+.nb-link { margin-bottom: .3rem; }
+.ueben-titel { font-weight: 600; margin-top: .3rem; color: var(--leise); }
+.ueben-titel:first-child { margin-top: 0; }
+.ck-ueben ul, .rm-gruppe ul { margin: .1rem 0 .3rem; padding-left: 1.1rem; }
+.rm-titel { font-style: italic; }
+.leise { color: var(--leise); }
+.klein { font-size: .85rem; margin: .5rem 0 0; }
+.smileys { display: flex; gap: .1rem; }
 .smiley {
-  font-size: 1.35rem; background: none; border: 2px solid transparent; border-radius: 8px; cursor: pointer;
-  padding: .1rem .2rem; filter: grayscale(1); opacity: .55;
+  font-size: 1.3rem; background: none; border: 2px solid transparent; border-radius: 8px; cursor: pointer;
+  padding: .05rem .15rem; filter: grayscale(1); opacity: .55;
 }
 .smiley:hover { opacity: .9; }
 .smiley.aktiv { filter: none; opacity: 1; border-color: var(--akzent); background: var(--akzent-hell); }
-@media (max-width: 620px) {
-  .ck-zeile { grid-template-columns: 1fr auto; }
-  .ck-zeile .ck-text { grid-column: 1 / -1; }
+/* Schmale Bildschirme: jede Gruppe als Karte, Informationen und Übungen unter den Zeilen */
+@media (max-width: 760px) {
+  .ck-tabelle thead { display: none; }
+  .ck-tabelle tbody.ck-gruppe { display: flex; flex-direction: column; border: 1px solid var(--linie); border-radius: 8px; margin-bottom: .7rem; padding: .3rem .6rem; }
+  .ck-tabelle tr { display: contents; }
+  .ck-tabelle td { display: block; border: 0; padding: .25rem 0; width: auto; }
+  .ck-tabelle td.ck-text { order: calc(var(--zeile) * 2); }
+  .ck-tabelle td.ck-smileys { order: calc(var(--zeile) * 2 + 1); border-bottom: 1px dashed var(--linie); padding-bottom: .4rem; }
+  .ck-tabelle td.ck-info { order: 100; }
+  .ck-tabelle td.ck-info::before { content: "Hier finde ich Informationen"; display: block; font-weight: 600; color: var(--leise); }
+  .ck-tabelle td.ck-ueben { order: 101; }
 }
 
+/* Ampel für die Schwierigkeit */
+.ampel { display: inline-block; width: .85em; height: .85em; border-radius: 50%; vertical-align: -.08em; border: 1px solid rgba(0,0,0,.25); }
+.ampel.gruen { background: #2e9d4f; }
+.ampel.gelb { background: #f2c200; }
+.ampel.rot { background: #d23b2e; }
+.ampel-legende .ampel { margin-left: .3rem; }
+
 /* Kompetenz-Abschnitte */
-.kompetenz h2 { display: flex; gap: .6rem; font-size: 1.15rem; margin: .2rem 0 .4rem; }
+.kompetenz h2 { display: flex; gap: .6rem; font-size: 1.1rem; margin: .2rem 0 .7rem; font-weight: 600; }
 .kompetenz .nr {
   flex: none; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--akzent); color: #fff;
   display: inline-flex; align-items: center; justify-content: center; font-size: .95rem;
 }
-.unterpunkte { margin: 0 0 .5rem 2.4rem; padding-left: 1rem; color: var(--leise); }
-.info { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .88rem; margin: .4rem 0 .8rem 2.4rem; }
-.info a { text-decoration: none; }
-.info a:hover { text-decoration: underline; }
 
 details.uebung { border: 1px solid var(--linie); border-radius: var(--radius); margin: .5rem 0; background: #fbfcfe; }
 details.uebung > summary {
@@ -90,12 +116,22 @@ details.uebung > summary {
 }
 details.uebung[open] > summary { border-bottom: 1px solid var(--linie); }
 .zaehler { font-weight: normal; font-size: .85rem; color: var(--ok); }
-.stufen { display: flex; gap: .4rem; padding: .7rem .9rem 0; }
+.etikett { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--akzent); color: #fff; border-radius: 4px; padding: .05rem .4rem; margin-right: .5rem; vertical-align: .1em; }
+details.realmath { border: 1px dashed #b9c6dc; border-radius: var(--radius); margin: .5rem 0; background: #fff; }
+details.realmath > summary { cursor: pointer; padding: .55rem .9rem; font-weight: 600; display: flex; justify-content: space-between; gap: 1rem; }
+.extern { font-weight: normal; font-size: .85rem; color: var(--leise); }
+.rm-inhalt { padding: 0 .9rem .6rem; columns: 2 220px; }
+.rm-gruppe { break-inside: avoid; }
+.stufen { display: flex; flex-wrap: wrap; gap: .4rem; padding: .7rem .9rem 0; }
 .stufe {
   border: 1px solid var(--linie); background: var(--karte); border-radius: 99px; padding: .3rem .9rem;
   cursor: pointer; font: inherit; font-size: .9rem;
 }
-.stufe.aktiv { background: var(--akzent); border-color: var(--akzent); color: #fff; }
+.stufe { display: inline-flex; align-items: center; gap: .4rem; }
+.stufen-label { align-self: center; font-size: .9rem; color: var(--leise); margin-right: .2rem; }
+.stufe.gruen.aktiv { background: #e3f4e8; border-color: #2e9d4f; font-weight: 600; }
+.stufe.gelb.aktiv { background: #fff6d1; border-color: #c9a100; font-weight: 600; }
+.stufe.rot.aktiv { background: #fbe4e2; border-color: #d23b2e; font-weight: 600; }
 .flaeche { padding: .3rem .9rem .9rem; }
 
 /* Aufgabe */
@@ -190,3 +226,5 @@ table.mengen td.falsch { background: var(--falsch-hell); }
   .aktionen, .mini-tastatur, .smileys, .stufen { display: none; }
   body { background: #fff; }
 }
+.eingabe.breit { width: 15rem; }
+.notiz { background: #eef3fb; border-left: 4px solid var(--akzent); padding: .4rem .8rem; border-radius: 0 8px 8px 0; font-size: .95rem; }
