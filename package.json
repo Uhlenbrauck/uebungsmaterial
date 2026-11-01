@@ -1,0 +1,8 @@
+{
+  "name": "uebungsmaterial",
+  "private": true,
+  "description": "Übungsumgebung zur Vorbereitung auf Klassenarbeiten und Klausuren (statische Seiten, ohne Build-Schritt)",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
