@@ -1,0 +1,196 @@
+/* Übungsmaterial – gemeinsames Aussehen aller Seiten. Keine externen Schriften. */
+:root {
+  --text: #1d2433;
+  --leise: #5b6475;
+  --linie: #d9dee8;
+  --flaeche: #f5f7fb;
+  --karte: #ffffff;
+  --akzent: #1f4e8c;
+  --akzent-hell: #e6eef9;
+  --ok: #1d7a46;
+  --ok-hell: #e3f4ea;
+  --falsch: #b42318;
+  --falsch-hell: #fdecea;
+  --tipp: #fff6dc;
+  --radius: 10px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--flaeche); }
+.seite { max-width: 860px; margin: 0 auto; padding: 1rem 1rem 3rem; }
+a { color: var(--akzent); }
+h1, h2, h3, h4 { line-height: 1.25; }
+h1 { font-size: 1.8rem; margin: .2rem 0; }
+
+.brotkrumen { font-size: .9rem; color: var(--leise); margin-bottom: .5rem; }
+.kopf { margin-bottom: 1rem; }
+.untertitel { color: var(--leise); margin: 0; font-size: 1.05rem; }
+.fuss { margin-top: 2.5rem; font-size: .85rem; color: var(--leise); text-align: center; }
+
+.kasten, .kompetenz {
+  background: var(--karte);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+}
+.anleitung { background: var(--akzent-hell); border-color: #c6d6ee; }
+.anleitung h2 { font-size: 1.1rem; margin-top: 0; }
+.kasten > h2 { margin-top: .2rem; }
+.anleitung ol { margin: .3rem 0 0; padding-left: 1.3rem; }
+
+/* Startseite */
+.fach { margin-top: 2rem; border-bottom: 2px solid var(--akzent); padding-bottom: .2rem; }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .8rem; }
+.kachel {
+  display: block; background: var(--karte); border: 1px solid var(--linie); border-radius: var(--radius);
+  padding: .9rem 1rem; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s;
+}
+.kachel:hover { border-color: var(--akzent); box-shadow: 0 2px 10px rgba(31, 78, 140, .12); }
+.kachel h4 { margin: .4rem 0 .3rem; color: var(--akzent); font-size: 1.1rem; }
+.kachel p { margin: 0; font-size: .92rem; color: var(--leise); }
+.kachel.gesperrt { opacity: .6; }
+.abzeichen { font-size: .75rem; font-weight: 600; padding: .1rem .5rem; border-radius: 99px; background: var(--akzent-hell); color: var(--akzent); }
+.abzeichen.neu { background: var(--ok-hell); color: var(--ok); }
+.abzeichen.geplant { background: #eee; color: var(--leise); }
+
+/* Checkliste */
+.checkliste { list-style: none; margin: 0; padding: 0; }
+.checkliste li {
+  display: grid; grid-template-columns: 1fr auto auto; gap: .6rem 1rem; align-items: center;
+  padding: .6rem 0; border-top: 1px solid var(--linie);
+}
+.checkliste li:first-child { border-top: 0; }
+.ck-unter { color: var(--leise); font-size: .93rem; }
+.smileys { display: flex; gap: .15rem; }
+.smiley {
+  font-size: 1.35rem; background: none; border: 2px solid transparent; border-radius: 8px; cursor: pointer;
+  padding: .1rem .2rem; filter: grayscale(1); opacity: .55;
+}
+.smiley:hover { opacity: .9; }
+.smiley.aktiv { filter: none; opacity: 1; border-color: var(--akzent); background: var(--akzent-hell); }
+@media (max-width: 620px) {
+  .checkliste li { grid-template-columns: 1fr auto; }
+  .checkliste li .ck-text { grid-column: 1 / -1; }
+}
+
+/* Kompetenz-Abschnitte */
+.kompetenz h2 { display: flex; gap: .6rem; font-size: 1.15rem; margin: .2rem 0 .4rem; }
+.kompetenz .nr {
+  flex: none; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--akzent); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: .95rem;
+}
+.unterpunkte { margin: 0 0 .5rem 2.4rem; padding-left: 1rem; color: var(--leise); }
+.info { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .88rem; margin: .4rem 0 .8rem 2.4rem; }
+.info a { text-decoration: none; }
+.info a:hover { text-decoration: underline; }
+
+details.uebung { border: 1px solid var(--linie); border-radius: var(--radius); margin: .5rem 0; background: #fbfcfe; }
+details.uebung > summary {
+  cursor: pointer; padding: .65rem .9rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: .3rem 1rem;
+  justify-content: space-between; list-style-position: inside;
+}
+details.uebung[open] > summary { border-bottom: 1px solid var(--linie); }
+.zaehler { font-weight: normal; font-size: .85rem; color: var(--ok); }
+.stufen { display: flex; gap: .4rem; padding: .7rem .9rem 0; }
+.stufe {
+  border: 1px solid var(--linie); background: var(--karte); border-radius: 99px; padding: .3rem .9rem;
+  cursor: pointer; font: inherit; font-size: .9rem;
+}
+.stufe.aktiv { background: var(--akzent); border-color: var(--akzent); color: #fff; }
+.flaeche { padding: .3rem .9rem .9rem; }
+
+/* Aufgabe */
+.aufgabe .frage { margin: .6rem 0; font-size: 1.05rem; }
+.term { font-size: 1.15rem; margin: .5rem 0; overflow-x: auto; overflow-y: hidden; }
+.bild { margin: .5rem 0; }
+.bild svg, .strahl-interaktiv svg { width: 100%; height: auto; max-width: 680px; display: block; }
+.felder { display: flex; flex-direction: column; gap: .6rem; margin: .6rem 0; }
+.feld { display: inline-flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.feld-label { font-weight: 600; }
+.eingabe {
+  font: inherit; font-size: 1.1rem; padding: .35rem .6rem; width: 9.5rem; border: 2px solid var(--linie);
+  border-radius: 8px; background: #fff;
+}
+.eingabe:focus { outline: none; border-color: var(--akzent); }
+.feld.ok .eingabe { border-color: var(--ok); background: var(--ok-hell); }
+.feld.falsch .eingabe { border-color: var(--falsch); background: var(--falsch-hell); }
+.feld-meldung { font-size: .88rem; color: var(--falsch); min-height: 0; }
+.feld-meldung:empty { display: none; }
+
+.auswahl { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
+.option {
+  display: inline-flex; align-items: center; gap: .4rem; border: 2px solid var(--linie); border-radius: 8px;
+  padding: .35rem .7rem; cursor: pointer; background: #fff;
+}
+.option:has(input:checked) { border-color: var(--akzent); background: var(--akzent-hell); }
+.option.ok { border-color: var(--ok); background: var(--ok-hell); }
+.option.falsch { border-color: var(--falsch); background: var(--falsch-hell); }
+
+.strahl-interaktiv { border: 2px dashed var(--linie); border-radius: 8px; cursor: crosshair; touch-action: manipulation; background: #fff; }
+.strahl-interaktiv.ok { border-color: var(--ok); border-style: solid; }
+.strahl-interaktiv.falsch { border-color: var(--falsch); border-style: solid; }
+
+.tabelle-scroll { overflow-x: auto; }
+table.mengen { border-collapse: collapse; background: #fff; }
+table.mengen th, table.mengen td { border: 1px solid var(--linie); padding: .35rem .7rem; text-align: center; min-width: 4.5rem; }
+table.mengen thead th, table.mengen tbody th { background: var(--flaeche); }
+table.mengen td.ok { background: var(--ok-hell); }
+table.mengen td.falsch { background: var(--falsch-hell); }
+.kreuz input { width: 1.3rem; height: 1.3rem; cursor: pointer; }
+
+.mini-tastatur { display: flex; gap: .3rem; margin: .2rem 0 .6rem; }
+.taste {
+  font: inherit; min-width: 2.6rem; padding: .25rem .5rem; border: 1px solid var(--linie); border-radius: 6px;
+  background: var(--flaeche); cursor: pointer;
+}
+.aktionen { display: flex; flex-wrap: wrap; gap: .4rem; margin: .4rem 0; }
+.knopf {
+  font: inherit; display: inline-block; padding: .45rem .95rem; border-radius: 8px; border: 1px solid var(--linie);
+  background: #fff; color: var(--text); cursor: pointer; text-decoration: none;
+}
+.knopf:hover { border-color: var(--akzent); }
+.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: #fff; font-weight: 600; }
+.knopf.klein { font-size: .85rem; padding: .25rem .6rem; white-space: nowrap; }
+.knopf:disabled { opacity: .5; cursor: default; }
+
+.rueckmeldung { font-weight: 600; margin: .4rem 0; }
+.rueckmeldung.ok { color: var(--ok); }
+.rueckmeldung.falsch { color: var(--falsch); }
+.tipp { background: var(--tipp); border-radius: 8px; padding: .1rem .8rem; margin: .4rem 0; }
+.loesung { border-left: 4px solid var(--ok); background: var(--ok-hell); padding: .2rem .9rem; border-radius: 0 8px 8px 0; margin-top: .6rem; }
+.loesung h4 { margin: .5rem 0 .2rem; }
+.loesung p { margin: .3rem 0; }
+
+/* Zahlenstrahl */
+.zs-achse { stroke: #1d2433; stroke-width: 2; }
+.zs-spitze { fill: #1d2433; }
+.zs-haupt { stroke: #1d2433; stroke-width: 2; }
+.zs-haupt.zs-null { stroke-width: 3; }
+.zs-neben { stroke: #7a8396; stroke-width: 1; }
+.zs-text { font-size: 15px; text-anchor: middle; fill: #1d2433; font-family: system-ui, sans-serif; }
+.zs-pfeil { stroke: #d92d20; stroke-width: 3; }
+.zs-pfeil-spitze { fill: #d92d20; }
+.zs-pfeil-text { font-size: 16px; font-weight: 700; text-anchor: middle; fill: #d92d20; font-family: system-ui, sans-serif; }
+.zs-pfeil.gruen { stroke: var(--ok); }
+.zs-pfeil-spitze.gruen, .zs-pfeil-text.gruen { fill: var(--ok); }
+.zs-bogen { fill: none; stroke: #2563c9; stroke-width: 2.5; }
+.zs-bogen-spitze { fill: #2563c9; }
+.zs-bogen-text { font-size: 16px; font-weight: 700; text-anchor: middle; fill: #2563c9; font-family: system-ui, sans-serif; }
+.zs-markierung { fill: #9be3b4; }
+.zs-marke line { stroke: #1f4e8c; stroke-width: 3; }
+.zs-marke polygon { fill: #1f4e8c; }
+.zs-marke text { font-size: 16px; font-weight: 700; text-anchor: middle; fill: #1f4e8c; font-family: system-ui, sans-serif; }
+
+/* Abschlusstest */
+.test-liste { padding-left: 1.4rem; }
+.test-liste > li { border-bottom: 1px solid var(--linie); padding: .4rem 0 .8rem; }
+.test-ergebnis:empty { display: none; }
+.test-ergebnis { background: var(--akzent-hell); border-radius: var(--radius); padding: .3rem 1rem; margin: 1rem 0; }
+
+@media print {
+  .aktionen, .mini-tastatur, .smileys, .stufen { display: none; }
+  body { background: #fff; }
+}

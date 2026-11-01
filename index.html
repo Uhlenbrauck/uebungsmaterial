@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Übungsmaterial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main class="seite">
+    <header class="kopf">
+      <h1>Übungsmaterial</h1>
+      <p class="untertitel">Üben vor Klassenarbeiten und Klausuren – Friedrich-Bährens-Gymnasium, Herr Uhlenbrauck</p>
+    </header>
+    <section class="kasten anleitung">
+      <p>Wähle dein Thema. Auf jeder Themenseite findest du eine <b>Checkliste</b> zum Einschätzen, <b>Übungen</b> in drei Stufen mit sofortiger Rückmeldung und einen <b>Abschlusstest</b>. Die Aufgaben werden jedes Mal neu erzeugt.</p>
+    </section>
+    <div id="katalog"></div>
+    <footer class="fuss">Es werden keine Daten übertragen. Dein Fortschritt bleibt nur in deinem Browser.</footer>
+  </main>
+  <script src="assets/js/aufgaben.js"></script>
+  <script src="assets/js/katalog.js"></script>
+  <script>
+    (function () {
+      const { el, katalog } = UM;
+      const STATUS = { neu: 'Neu', verfuegbar: 'Verfügbar', geplant: 'In Vorbereitung' };
+      const ziel = document.getElementById('katalog');
+      for (const f of katalog) {
+        ziel.append(el('h2', { class: 'fach' }, f.fach));
+        for (const b of f.bereiche) {
+          ziel.append(el('h3', {}, b.titel));
+          ziel.append(el('div', { class: 'kacheln' }, ...b.themen.map((t) => {
+            const inhalt = [el('span', { class: 'abzeichen ' + t.status }, STATUS[t.status]), el('h4', {}, t.titel), el('p', {}, t.text)];
+            return t.status === 'geplant' ? el('div', { class: 'kachel gesperrt' }, ...inhalt) : el('a', { class: 'kachel', href: t.pfad }, ...inhalt);
+          })));
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
