@@ -96,6 +96,8 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
         const texte = [a.frage, a.hinweis || '', ...a.loesung.filter((l) => typeof l === 'string'), ...a.felder.flatMap((f) => [...(f.optionen || []), f.label || ''])];
         for (const t of texte) for (const f of formeln(t)) pruefeKatex(f, wo);
         if (a.term) pruefeKatex(a.term, wo);
+        // Formeln in Tabellen und Bildern
+        for (const f of formeln(String(a.bild || '').replace(/<svg[\s\S]*?<\/svg>/g, ''))) pruefeKatex(f, wo);
         if (a.term) assert.ok(!UM.gesperrteTerme.has(UM.termHash(a.term)), `${wo}: gesperrter Term: ${a.term}`);
         for (const f of a.felder) {
           if (f.art === 'zahl') {
@@ -130,6 +132,20 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
               assert.ok(z.Q && (!z.N || z.Z), wo);
               if (!z.tex.includes('overline')) assert.ok(Math.abs(texWert(z.tex) - z.w.zahl()) < 1e-9, `${wo}: ${z.tex}`);
             }
+          } else if (f.art === 'menge') {
+            assert.ok(Array.isArray(f.antwort), wo);
+            // Die eigene Lösung (auch in anderer Reihenfolge) wird erkannt, eine fehlende Lösung nicht
+            assert.ok(UM.pruefeMenge(UM.mengeText(f.antwort), f.antwort).ok, `${wo}: ${UM.mengeText(f.antwort)}`);
+            assert.ok(UM.pruefeMenge(UM.mengeText(f.antwort).replace(/[{}]/g, '').split('; ').reverse().join('; ') || '{}', f.antwort).ok, `${wo}: Reihenfolge`);
+            if (f.antwort.length > 1) assert.ok(!UM.pruefeMenge(UM.mengeText(f.antwort.slice(1)), f.antwort).ok, wo);
+            for (const t of formeln(UM.mengeTex(f.antwort))) pruefeKatex(t, wo);
+            pruefeKatex(UM.mengeTex(f.antwort), wo);
+          } else if (f.art === 'naeherung') {
+            assert.ok(Number.isFinite(f.wert), wo);
+            assert.ok(UM.pruefeNaeherung(UM.naeherungText(f.wert, f.stellen ?? 2), f.wert, f).ok, `${wo}: ${UM.naeherungText(f.wert, 2)} für ${f.wert}`);
+            if (f.prozent) assert.ok(UM.pruefeNaeherung(UM.naeherungText(f.wert, 3, true), f.wert, f).ok, `${wo}: Prozent`);
+            if (f.exakt) assert.ok(UM.pruefeNaeherung(f.exakt.text('bruch'), f.wert, f).ok, `${wo}: Bruch`);
+            assert.ok(!UM.pruefeNaeherung(UM.naeherungText(f.wert + 0.05, 2), f.wert, f).ok, `${wo}: zu ungenau erkannt`);
           } else assert.fail(`${wo}: unbekanntes Feld ${f.art}`);
         }
       }
@@ -162,9 +178,12 @@ test('Fehler finden: Aufgabe ist wirklich falsch, Lösung richtig', () => {
   }
 });
 
-test('Thema: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren', () => {
-  const UMt = lade(...ALLE, 'mathematik/klasse-7/rationale-zahlen/thema.js');
+for (const pfad of ['mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
+  const UMt = lade(...ALLE, pfad);
+  const ids = new Set();
   for (const k of UMt.thema.kompetenzen) {
+    assert.ok(!ids.has(k.id), `doppelte id ${k.id}`);
+    ids.add(k.id);
     assert.ok(Array.isArray(k.zeilen) && k.zeilen.length > 0, k.id);
     for (const u of k.uebungen) assert.ok(UMt.generatoren[u.gen], `${k.id}: ${u.gen} fehlt`);
     for (const n of [...(k.notizbuch || []), ...(k.notizbuchUeben || [])]) assert.ok(n.onenote.startsWith('onenote:') && (!n.web || n.web.startsWith('https://')), n.titel);

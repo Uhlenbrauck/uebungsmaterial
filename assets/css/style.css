@@ -267,3 +267,37 @@ table.mengen td.falsch { background: var(--falsch-hell); }
 .datenschutz { display: flex; gap: .5rem; align-items: flex-start; background: #eef7f1; border: 1px solid #b7dcc3; border-radius: 8px; padding: .5rem .75rem; font-size: .93rem; margin: .4rem 0 .8rem; }
 .datenschutz .schloss { flex: none; }
 @media print { body.druck-lernstand .datenschutz { display: none; } }
+
+/* Vierfeldertafel */
+table.vft { border-collapse: collapse; background: #fff; margin: .3rem 0; }
+table.vft th, table.vft td { border: 1px solid #9aa6bb; padding: .35rem .8rem; text-align: center; min-width: 5rem; }
+table.vft thead th, table.vft tbody th { background: var(--flaeche); }
+table.vft tr:last-child td, table.vft td:last-child { background: #f9fafc; }
+.frage-zelle { color: var(--akzent); }
+
+/* Baumdiagramm */
+.bd-ast { stroke: #1d2433; stroke-width: 1.6; }
+.bd-knoten { fill: #fff; stroke: #1d2433; stroke-width: 1.4; }
+.bd-wurzel { fill: #1d2433; }
+.bd-name { font-size: 15px; text-anchor: middle; font-family: system-ui, sans-serif; font-style: italic; fill: #1d2433; }
+.bd-strich { stroke: #1d2433; stroke-width: 1.4; }
+.bd-wert, .bd-pfad { font-size: 15px; text-anchor: middle; font-family: system-ui, sans-serif; fill: #1d2433; }
+.bd-pfad { text-anchor: start; }
+.bd-frage { fill: #1f4e8c; font-weight: 700; }
+.bild svg[aria-label="Baumdiagramm"] { max-width: 520px; }
+
+/* Koordinatensystem */
+.ks-gitter { stroke: #e3e7ef; stroke-width: 1; }
+.ks-achse { stroke: #1d2433; stroke-width: 1.5; }
+.ks-text { font-size: 14px; font-style: italic; font-family: system-ui, sans-serif; fill: #1d2433; }
+.ks-zahl { font-size: 11px; text-anchor: middle; font-family: system-ui, sans-serif; fill: #5b6475; }
+.ks-zahl.ks-links { text-anchor: end; }
+.ks-graph { fill: none; stroke: #2563c9; stroke-width: 2.5; }
+.ks-punkt { fill: #d92d20; }
+.ks-ptext { font-size: 13px; font-family: system-ui, sans-serif; fill: #d92d20; }
+.bild svg[aria-label="Graph einer Parabel"] { max-width: 360px; }
+.option svg.klein { width: 140px; height: auto; display: block; }
+
+/* CAS-Eingaben */
+code.cas { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .95em; background: #eef1f6; border: 1px solid var(--linie); border-radius: 4px; padding: .05rem .3rem; white-space: nowrap; }
+.eingabe::placeholder { color: #a2a9b6; }

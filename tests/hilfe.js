@@ -19,9 +19,13 @@ function lade(...dateien) {
 
 const ALLE = [
   'assets/js/bruch.js',
+  'assets/js/loesungen.js',
   'assets/js/term.js',
   'assets/js/zahlenstrahl.js',
+  'assets/js/zufall.js',
   'assets/js/generatoren/rationale-zahlen.js',
+  'assets/js/generatoren/wahrscheinlichkeit.js',
+  'assets/js/generatoren/quadratische-funktionen.js',
 ];
 
 /**
