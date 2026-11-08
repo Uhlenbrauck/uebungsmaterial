@@ -62,6 +62,12 @@ Von Hand neu veröffentlichen: Actions → „Seite veröffentlichen“ → „R
 
 Lokal ansehen: `index.html` per Doppelklick im Browser öffnen.
 
+## Versionsnummern
+
+An eingebundene Dateien hängt `npm run versionen` ein `?v=…` (Kurz-Hash des Inhalts). Ändert sich eine Datei, laden Browser sie
+sofort neu. Die Tests schlagen fehl, wenn eine Nummer veraltet ist. Die HTML-Seite selbst kann GitHub Pages bis zu 10 Minuten
+im Zwischenspeicher halten.
+
 ## Notizbuch-Links
 
 Wie man die Links auf das OneNote-Klassennotizbuch für die Checkliste holt, steht in
