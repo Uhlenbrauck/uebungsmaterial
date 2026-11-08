@@ -20,6 +20,17 @@
             },
           ],
         },
+        {
+          titel: 'Klasse 10',
+          themen: [
+            {
+              titel: 'Bedingte Wahrscheinlichkeit und quadratische Gleichungen',
+              text: 'Vierfeldertafel und Baumdiagramm, bedingte Wahrscheinlichkeit, Zuverlässigkeit von Tests, stochastische Unabhängigkeit, Scheitelform, charakteristische Punkte, Anwendungen mit der CAS-App und Nullstellen ohne CAS. Mit Checkliste und Abschlusstest.',
+              pfad: 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/index.html',
+              status: 'neu',
+            },
+          ],
+        },
       ],
     },
   ];

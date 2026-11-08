@@ -47,15 +47,19 @@
     klammer: 'Schreibe die Rechnung ganz ohne Klammern, z. B. −3 + 5 − 2,5',
     summeUnlesbar: 'Schreibe nur Zahlen mit + und −, z. B. −3 + 5 − 2,5',
     leer: 'Hier fehlt noch etwas.',
+    mengeUnlesbar: 'Trenne die Lösungen mit einem Semikolon, z. B. −2; 5. Wurzeln: √3 oder 2√3. Leere Menge: {}',
+    naeherungUnlesbar: 'Gib eine Zahl ein, z. B. 12,35',
+    semikolon: 'Trenne die Lösungen mit einem Semikolon (;) – das Komma gehört zu Dezimalzahlen.',
+    stellen: 'Fast – runde auf mindestens zwei Nachkommastellen.',
   };
 
   // ---------- Felder ----------
   function zahlFeld(f, kontext, summe = false) {
     const input = el('input', {
       type: 'text', class: 'eingabe', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
-      inputmode: 'text', 'aria-label': (f.label || 'Ergebnis').replace(/\$/g, ''),
+      inputmode: 'text', 'aria-label': (f.label || 'Ergebnis').replace(/\$/g, ''), placeholder: f.platzhalter || false,
     });
-    if (summe) input.classList.add('breit');
+    if (summe || f.art === 'menge') input.classList.add('breit');
     input.addEventListener('focus', () => { kontext.letztesFeld = input; });
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') kontext.enter(); });
     const label = f.label ? mathe(el('span', { class: 'feld-label', html: /=\$$/.test(f.label) ? f.label : f.label + ':' })) : null;
@@ -68,6 +72,14 @@
         if (summe) {
           const r = UM.pruefeSumme(input.value, f.antwort);
           return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund === 'unlesbar' ? 'summeUnlesbar' : r.grund]);
+        }
+        if (f.art === 'menge') {
+          const r = UM.pruefeMenge(input.value, f.antwort);
+          return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund === 'unlesbar' ? 'mengeUnlesbar' : r.grund]);
+        }
+        if (f.art === 'naeherung') {
+          const r = UM.pruefeNaeherung(input.value, f.wert, f);
+          return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund === 'unlesbar' ? 'naeherungUnlesbar' : r.grund]);
         }
         const r = UM.pruefeZahl(input.value, f.antwort, { gekuerzt: f.gekuerzt });
         return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund]);
@@ -179,16 +191,20 @@
     const modus = optionen.modus || 'uebung';
     const kontext = { letztesFeld: null, enter: () => pruefen() };
     const felder = aufgabe.felder.map((f) =>
-      f.art === 'zahl' ? zahlFeld(f, kontext) : f.art === 'summe' ? zahlFeld(f, kontext, true) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
+      f.art === 'zahl' || f.art === 'menge' || f.art === 'naeherung' ? zahlFeld(f, kontext) : f.art === 'summe' ? zahlFeld(f, kontext, true) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
     );
-    const hatZahl = aufgabe.felder.some((f) => f.art === 'zahl' || f.art === 'summe');
+    const hatZahl = aufgabe.felder.some((f) => ['zahl', 'summe', 'menge', 'naeherung'].includes(f.art));
+    const tasten = [['−', '-'], ['/', '/'], [',', ',']];
+    if (aufgabe.felder.some((f) => f.art === 'menge')) tasten.push([';', '; '], ['√', '√'], ['{ }', '{}']);
+    if (aufgabe.felder.some((f) => f.art === 'naeherung' && f.prozent)) tasten.push(['%', ' %']);
+    if (aufgabe.felder.some((f) => f.art === 'zahl' || f.art === 'summe')) tasten.push(['Leer', ' ']);
     const rueck = el('div', { class: 'rueckmeldung', 'aria-live': 'polite' });
     const loesung = el('div', { class: 'loesung', hidden: true });
     const tipp = el('div', { class: 'tipp', hidden: true }, aufgabe.hinweis ? mathe(el('p', { html: '💡 ' + aufgabe.hinweis })) : null);
 
     const tastatur = hatZahl
       ? el('div', { class: 'mini-tastatur', 'aria-label': 'Sonderzeichen' },
-          ...[['−', '-'], ['/', '/'], [',', ','], ['Leer', ' ']].map(([t, z]) =>
+          ...tasten.map(([t, z]) =>
             el('button', { type: 'button', class: 'taste', title: z === ' ' ? 'Leerzeichen (für gemischte Zahlen wie 1 3/4)' : '', onclick: (ev) => { ev.preventDefault(); einfuegen(z); } }, t)))
       : null;
     function einfuegen(z) {
@@ -213,7 +229,7 @@
       el('div', { class: 'aufgabe' },
         mathe(el('p', { class: 'frage', html: aufgabe.frage })),
         aufgabe.term ? formel(aufgabe.term) : null,
-        aufgabe.bild ? el('div', { class: 'bild', html: aufgabe.bild }) : null,
+        aufgabe.bild ? mathe(el('div', { class: 'bild', html: aufgabe.bild })) : null,
         aufgabe.notiz ? el('p', { class: 'notiz' }, '✏️ Schreibe deine Nebenrechnungen und Zwischenschritte auf – im Heft oder auf dem iPad. Gib dann hier das Ergebnis ein.') : null,
         el('div', { class: 'felder' }, ...felder.map((f) => f.knoten)),
         tastatur, knoepfe, tipp, rueck, loesung),
@@ -236,7 +252,7 @@
       if (!loesung.hidden) return;
       loesung.replaceChildren(
         el('h4', {}, 'Lösung'),
-        ...aufgabe.loesung.map((l) => (typeof l === 'string' ? mathe(el('p', { html: l })) : el('div', { class: 'bild', html: l.svg }))),
+        ...aufgabe.loesung.map((l) => (typeof l === 'string' ? mathe(el('p', { html: l })) : mathe(el('div', { class: 'bild', html: l.svg })))),
       );
       loesung.hidden = false;
       if (modus === 'uebung') gewertet = true; // nach dem Ansehen der Lösung zählt die Aufgabe nicht mehr

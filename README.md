@@ -11,6 +11,8 @@ index.html                     Startseite (liest assets/js/katalog.js)
 assets/
   css/style.css                Aussehen aller Seiten
   js/bruch.js                  exakte Bruchrechnung, Erkennen von Eingaben (−3,5 · −7/4 · −1 3/4)
+  js/loesungen.js              Lösungsmengen mit Wurzeln ({−√2; √2}), gerundete Werte und Prozentangaben
+  js/zufall.js                 Zufallshilfen für alle Generatoren
   js/term.js                   Termbäume: Wert und Formel aus derselben Struktur
   js/zahlenstrahl.js           Zahlenstrahl als SVG (Bild, Pfeilbild, zum Anklicken)
   js/aufgaben.js               Darstellung und Prüfung einer Aufgabe
@@ -21,6 +23,9 @@ assets/
 mathematik/klasse-7/rationale-zahlen/
   index.html                   Seite des Themas
   thema.js                     Kompetenzen (= Checkliste), Übungen, Realmath-Links, Test-Einstellungen
+mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/
+                               Ma 10c 2026/27, Klassenarbeit Nr. 1
+docs/notizbuch-links.md        Notizbuch-Links mit dem Graph Explorer holen
 tests/                         node --test, prüft alle Generatoren
 ```
 
@@ -55,6 +60,11 @@ dann die Seite unter `https://uhlenbrauck.github.io/uebungsmaterial/` (Tests rot
 Von Hand neu veröffentlichen: Actions → „Seite veröffentlichen“ → „Run workflow“.
 
 Lokal ansehen: `index.html` per Doppelklick im Browser öffnen.
+
+## Notizbuch-Links
+
+Wie man die Links auf das OneNote-Klassennotizbuch für die Checkliste holt, steht in
+[`docs/notizbuch-links.md`](docs/notizbuch-links.md).
 
 ## Lizenzen
 
