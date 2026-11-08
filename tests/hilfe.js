@@ -23,9 +23,11 @@ const ALLE = [
   'assets/js/term.js',
   'assets/js/zahlenstrahl.js',
   'assets/js/zufall.js',
+  'assets/js/cas.js',
   'assets/js/generatoren/rationale-zahlen.js',
   'assets/js/generatoren/wahrscheinlichkeit.js',
   'assets/js/generatoren/quadratische-funktionen.js',
+  'assets/js/generatoren/cas-befehle.js',
 ];
 
 /**

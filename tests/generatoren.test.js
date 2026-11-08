@@ -146,12 +146,40 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
             if (f.prozent) assert.ok(UM.pruefeNaeherung(UM.naeherungText(f.wert, 3, true), f.wert, f).ok, `${wo}: Prozent`);
             if (f.exakt) assert.ok(UM.pruefeNaeherung(f.exakt.text('bruch'), f.wert, f).ok, `${wo}: Bruch`);
             assert.ok(!UM.pruefeNaeherung(UM.naeherungText(f.wert + 0.05, 2), f.wert, f).ok, `${wo}: zu ungenau erkannt`);
+          } else if (f.art === 'cas') {
+            assert.ok(UM.pruefeCas(f.loesung, f.soll).ok, `${wo}: eigene Lösung ${f.loesung} nicht erkannt`);
+            assert.ok(!UM.pruefeCas(f.loesung.slice(0, -1), f.soll).ok, `${wo}: ohne Klammer erkannt`);
+            assert.ok(typeof f.ausgabe === 'string' && f.ausgabe.length > 0 && !/NaN|undefined/.test(f.ausgabe), `${wo}: Ausgabe ${f.ausgabe}`);
           } else assert.fail(`${wo}: unbekanntes Feld ${f.art}`);
         }
       }
     }
   });
 }
+
+test('CAS: gleichwertige Eingaben und typische Fehler', () => {
+  const F = '-0.0215*x^2+0.254*x+0.9';
+  const ok = (e, soll) => assert.ok(UM.pruefeCas(e, soll).ok, e);
+  const nein = (e, soll, teil) => { const r = UM.pruefeCas(e, soll); assert.ok(!r.ok, e); if (teil) assert.ok(r.meldung.includes(teil), `${e}: ${r.meldung}`); };
+  ok('f(x):=-0.0215x^2+0.254x+0.9', { art: 'definition', ausdruck: F });
+  ok('F(X) := 0.9 + 0.254*x - 0.0215*x^2', { art: 'definition', ausdruck: F });
+  nein('f(x)=-0.0215x^2+0.254x+0.9', { art: 'definition', ausdruck: F }, ':=');
+  nein('f(x):=-0,0215x^2+0.254x+0.9', { art: 'definition', ausdruck: F }, 'Dezimalpunkt');
+  const s = { art: 'solve', links: 'f(x)', rechts: '2.5', f: F };
+  ok('solve(f(x)=2.5,x)', s);
+  ok('solve(2.5=f(x),x)', s);
+  ok('solve(-0.0215x^2+0.254x+0.9=2.5,x)', s);
+  nein('solve(f(x)=2,5,x)', s, 'Dezimalpunkt');
+  nein('solve(f(x)=2.5)', s, 'Variablen');
+  nein('solve(f(x)=2.5,x', s, 'Klammern');
+  nein('solve(f(x)=3,x)', s, 'Inhalt');
+  nein('factor(f(x))', s, 'anderer Befehl');
+  ok('completeSquare(f(x),x)', { art: 'completesquare', ausdruck: 'f(x)', f: F });
+  ok('factor(3x^2-12x)', { art: 'factor', ausdruck: '3*x^2-12*x' });
+  ok('factor(3x^2-12x,x)', { art: 'factor', ausdruck: '3*x^2-12*x' });
+  ok('f(3.5)', { art: 'wert', arg: 3.5 });
+  nein('f(3,5)', { art: 'wert', arg: 3.5 }, 'Dezimalpunkt');
+});
 
 test('Vergleich: richtiges Zeichen', () => {
   for (let i = 0; i < 500; i++) {

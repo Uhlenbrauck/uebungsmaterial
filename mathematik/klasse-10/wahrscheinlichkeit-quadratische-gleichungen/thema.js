@@ -416,6 +416,47 @@
             "titel": "Gemischt: Welches Verfahren passt?"
           }
         ]
+      },
+      {
+        "id": "cas-befehle",
+        "zusatz": true,
+        "zeilen": [
+          "Ich kann eine Funktion in der CAS-App definieren und die Befehle f(…), $\\texttt{solve}$, $\\texttt{completeSquare}$ und $\\texttt{factor}$ mit der richtigen Schreibweise eingeben."
+        ],
+        "notizbuch": [
+          {
+            "titel": "22.09. | AB 04 - Wdh. quadratische Funktionen",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch/_Inhaltsbibliothek/10.2%20Quadratische%20Gleichungen.one#22.09.%20%7C%20AB%2004%20-%20Wdh.&section-id=cfcabd96-8dcc-44bc-8f8d-4486dbada660&page-id=9f6110e4-a1d7-444c-b0d6-8e11e1fee6cc&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F10.2%20Quadratische%20Gleichungen.one%7Ccfcabd96-8dcc-44bc-8f8d-4486dbada660%2F22.09.%20%5C%7C%20AB%2004%20-%20Wdh.%7C9f6110e4-a1d7-444c-b0d6-8e11e1fee6cc%2F%29"
+          },
+          {
+            "titel": "29.09. | AB 05 - Charakteristische Punkte von Parabeln",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch/_Inhaltsbibliothek/10.2%20Quadratische%20Gleichungen.one#29.09.%20%7C%20AB%2005%20-%20Charakteristische%20Punkte%20&section-id=cfcabd96-8dcc-44bc-8f8d-4486dbada660&page-id=3b59ac31-52c5-45ca-a945-80ab4e51c5f5&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F10.2%20Quadratische%20Gleichungen.one%7Ccfcabd96-8dcc-44bc-8f8d-4486dbada660%2F29.09.%20%5C%7C%20AB%2005%20-%20Charakteristische%20Punkte%20%7C3b59ac31-52c5-45ca-a945-80ab4e51c5f5%2F%29"
+          },
+          {
+            "titel": "| AB 09 - Nullstellen Typ ax^2+bx",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch/_Inhaltsbibliothek/10.2%20Quadratische%20Gleichungen.one#%7C%20AB%2009%20-%20Nullstellen%20Typ%20ax%5E2%2B&section-id=cfcabd96-8dcc-44bc-8f8d-4486dbada660&page-id=5f8336e9-804d-e240-bd73-95eb7e55a514&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F10.2%20Quadratische%20Gleichungen.one%7Ccfcabd96-8dcc-44bc-8f8d-4486dbada660%2F%5C%7C%20AB%2009%20-%20Nullstellen%20Typ%20ax%5E2%2B%7C5f8336e9-804d-e240-bd73-95eb7e55a514%2F%29"
+          }
+        ],
+        "uebungen": [
+          {
+            "gen": "cas-befehl-waehlen",
+            "titel": "Welcher Befehl passt? Welche Eingabe gehört zur Ausgabe?",
+            "imTest": false
+          },
+          {
+            "gen": "cas-fehler-finden",
+            "titel": "Fehler in der Eingabe finden",
+            "imTest": false
+          },
+          {
+            "gen": "cas-befehl-schreiben",
+            "titel": "Befehle selbst eingeben",
+            "imTest": false
+          }
+        ]
       }
     ]
   };
