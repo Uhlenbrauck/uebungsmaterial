@@ -65,7 +65,7 @@
         el('p', { class: 'ampel-legende' }, 'Jede Übung gibt es in drei Schwierigkeitsstufen: ',
           ...STUFEN.flatMap(([n, , t], i) => [ampel(n), ` ${t}${i < 2 ? ',  ' : '.'}`]),
           ' Fang mit Grün an und steigere dich.'),
-        el('p', {}, '✏️ Schreib bei längeren Aufgaben deine Nebenrechnungen ins Heft oder auf dem iPad mit. Nimm dir dafür ruhig Zeit – so machst du es in der Klassenarbeit auch.')),
+        el('p', {}, '✏️ Bei vielen Aufgaben helfen Notizen und Nebenrechnungen: Schreib Zwischenschritte ins Heft oder auf dem iPad mit, skizziere z. B. eine Tabelle, ein Diagramm oder einen Graphen. Nimm dir dafür ruhig Zeit – so machst du es in der Klassenarbeit auch.')),
       checkliste(),
       ...thema.kompetenzen.map(kompetenzAbschnitt),
       testAbschnitt(),

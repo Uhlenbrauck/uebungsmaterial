@@ -26,20 +26,20 @@
   // ja/nein: Satzende nach „…, dass eine zufällig ausgewählte Person“ bzw. „…, die“
   const KONTEXTE = [
     { wo: 'In einer Umfrage unter Jugendlichen wurde erfasst, wer im Verein Sport treibt und wer ein Instrument spielt.',
-      A: { s: 'S', ja: 'im Verein Sport treibt', nein: 'nicht im Verein Sport treibt', def: 'Die Person treibt im Verein Sport.' },
-      B: { s: 'I', ja: 'ein Instrument spielt', nein: 'kein Instrument spielt', def: 'Die Person spielt ein Instrument.' } },
+      A: { s: 'S', ja: 'im Verein Sport treibt', nein: 'nicht im Verein Sport treibt', pja: 'im Verein Sport treiben', pnein: 'nicht im Verein Sport treiben', def: 'Die Person treibt im Verein Sport.' },
+      B: { s: 'I', ja: 'ein Instrument spielt', nein: 'kein Instrument spielt', pja: 'ein Instrument spielen', pnein: 'kein Instrument spielen', def: 'Die Person spielt ein Instrument.' } },
     { wo: 'An einer Schule wurde erfasst, wer mit dem Fahrrad zur Schule kommt und wer mittags in der Mensa isst.',
-      A: { s: 'F', ja: 'mit dem Fahrrad zur Schule kommt', nein: 'nicht mit dem Fahrrad zur Schule kommt', def: 'Die Person kommt mit dem Fahrrad zur Schule.' },
-      B: { s: 'M', ja: 'in der Mensa isst', nein: 'nicht in der Mensa isst', def: 'Die Person isst in der Mensa.' } },
+      A: { s: 'F', ja: 'mit dem Fahrrad zur Schule kommt', nein: 'nicht mit dem Fahrrad zur Schule kommt', pja: 'mit dem Fahrrad zur Schule kommen', pnein: 'nicht mit dem Fahrrad zur Schule kommen', def: 'Die Person kommt mit dem Fahrrad zur Schule.' },
+      B: { s: 'M', ja: 'in der Mensa isst', nein: 'nicht in der Mensa isst', pja: 'in der Mensa essen', pnein: 'nicht in der Mensa essen', def: 'Die Person isst in der Mensa.' } },
     { wo: 'In einer Umfrage wurde erfasst, wer ein Haustier hat und wer auf dem Land wohnt.',
-      A: { s: 'H', ja: 'ein Haustier hat', nein: 'kein Haustier hat', def: 'Die Person hat ein Haustier.' },
-      B: { s: 'L', ja: 'auf dem Land wohnt', nein: 'in der Stadt wohnt', def: 'Die Person wohnt auf dem Land.' } },
-    { wo: 'In einer Jahrgangsstufe wurde erfasst, wer eine Brille trägt und wer Mathe als Lieblingsfach hat.',
-      A: { s: 'B', ja: 'eine Brille trägt', nein: 'keine Brille trägt', def: 'Die Person trägt eine Brille.' },
-      B: { s: 'M', ja: 'Mathe als Lieblingsfach hat', nein: 'Mathe nicht als Lieblingsfach hat', def: 'Die Person hat Mathe als Lieblingsfach.' } },
+      A: { s: 'H', ja: 'ein Haustier hat', nein: 'kein Haustier hat', pja: 'ein Haustier haben', pnein: 'kein Haustier haben', def: 'Die Person hat ein Haustier.' },
+      B: { s: 'L', ja: 'auf dem Land wohnt', nein: 'in der Stadt wohnt', pja: 'auf dem Land wohnen', pnein: 'in der Stadt wohnen', def: 'Die Person wohnt auf dem Land.' } },
+    { wo: 'In einer Umfrage unter Schülerinnen und Schülern wurde erfasst, wer morgens frühstückt und wer mit dem Bus zur Schule fährt.',
+      A: { s: 'F', ja: 'morgens frühstückt', nein: 'morgens nicht frühstückt', pja: 'morgens frühstücken', pnein: 'morgens nicht frühstücken', def: 'Die Person frühstückt morgens.' },
+      B: { s: 'B', ja: 'mit dem Bus zur Schule fährt', nein: 'nicht mit dem Bus zur Schule fährt', pja: 'mit dem Bus zur Schule fahren', pnein: 'nicht mit dem Bus zur Schule fahren', def: 'Die Person fährt mit dem Bus zur Schule.' } },
     { wo: 'In einem Sportverein wurde erfasst, wer schon einmal verletzt war und wer regelmäßig ein Aufwärmprogramm macht.',
-      A: { s: 'W', ja: 'regelmäßig ein Aufwärmprogramm macht', nein: 'kein Aufwärmprogramm macht', def: 'Die Person macht regelmäßig ein Aufwärmprogramm.' },
-      B: { s: 'V', ja: 'schon einmal verletzt war', nein: 'noch nie verletzt war', def: 'Die Person war schon einmal verletzt.' } },
+      A: { s: 'W', ja: 'regelmäßig ein Aufwärmprogramm macht', nein: 'kein Aufwärmprogramm macht', pja: 'regelmäßig ein Aufwärmprogramm machen', pnein: 'kein Aufwärmprogramm machen', def: 'Die Person macht regelmäßig ein Aufwärmprogramm.' },
+      B: { s: 'V', ja: 'schon einmal verletzt war', nein: 'noch nie verletzt war', pja: 'schon einmal verletzt waren', pnein: 'noch nie verletzt waren', def: 'Die Person war schon einmal verletzt.' } },
   ];
 
   /** Ereignis-Literal: { e: Ereignis aus Kontext, neg } */
@@ -232,6 +232,84 @@
         { svg: tafelHtml(k, voll(m)) },
         ...versteckt.map(([i, j], n) => `${BUCHST[n]} ${$(zellName(k, i, j, wkeit) + '=' + dz(m[i][j]))}`),
       ],
+    };
+  };
+
+  // Bedeutung der Felder (Verständnis, nicht im Abschlusstest)
+  const lplural = (l) => (l.neg ? l.e.pnein : l.e.pja);
+  /** Bedeutung eines Feldes in Worten. art: 'anzahl' | 'wkeit' | 'bedingt' (Ablenker) */
+  function bedeutung(k, i, j, art, tausch = false) {
+    const z = i < 2 ? zeileLit(k, i) : null;
+    const sp = j < 2 ? spalteLit(k, j) : null;
+    if (art === 'anzahl') {
+      if (z && sp) return `Anzahl der Befragten, die ${lplural(z)} und ${lplural(sp)}`;
+      if (z || sp) return `Anzahl der Befragten, die ${lplural(z || sp)}`;
+      return 'Anzahl aller Befragten';
+    }
+    if (art === 'wkeit') {
+      if (z && sp) return satz.schnitt(z, sp);
+      if (z || sp) return satz.einfach(z || sp);
+      return 'Wahrscheinlichkeit, dass eine zufällig ausgewählte Person befragt wurde';
+    }
+    // bedingt: typische Verwechslung
+    const [x, y] = tausch ? [sp, z] : [z, sp];
+    return satz.bedingt(x, y);
+  }
+  const ZELLEN_INNEN = [[0, 0], [0, 1], [1, 0], [1, 1]];
+  const ZELLEN_RAND = [[0, 2], [1, 2], [2, 0], [2, 1]];
+
+  gen['wk-vft-bedeutung'] = (stufe) => {
+    const k = R.wahl(KONTEXTE);
+    const wkeit = stufe === 3;
+    const art = wkeit ? 'wkeit' : 'anzahl';
+    const m = wkeit ? wkeitTafel() : anzahlTafel();
+    const key = ([i, j]) => i * 3 + j;
+    if (stufe === 2) {
+      // Bedeutung gegeben → welches Feld?
+      const ziel = R.wahl([...ZELLEN_INNEN, ...ZELLEN_INNEN, ...ZELLEN_RAND]);
+      const andere = R.mische([...ZELLEN_INNEN, ...ZELLEN_RAND].filter((z) => key(z) !== key(ziel))).slice(0, 3);
+      const markiert = R.mische([ziel, ...andere]);
+      const anzeige = voll(m);
+      markiert.forEach(([i, j], n) => { anzeige[i][j] = BUCHST[n]; });
+      return {
+        frage: `${k.wo} ${legende(k)} In welchem Feld der Vierfeldertafel steht die ${bedeutung(k, ziel[0], ziel[1], art)}?`,
+        bild: tafelHtml(k, anzeige),
+        felder: [{ art: 'auswahl', optionen: markiert.map((_, n) => `Feld ${BUCHST[n]}`), richtig: markiert.indexOf(ziel) }],
+        hinweis: `Innere Felder gehören zu zwei Merkmalen (Zeile und Spalte), Summenfelder nur zu einem. Die Zeile ${$(`\\overline{${k.A.s}}`)} bedeutet „nicht ${$(k.A.s)}“.`,
+        loesung: [`Feld ${BUCHST[markiert.indexOf(ziel)]}: Zeile ${$(ziel[0] < 2 ? ltex(zeileLit(k, ziel[0])) : '\\text{Summe}')}, Spalte ${$(ziel[1] < 2 ? ltex(spalteLit(k, ziel[1])) : '\\text{Summe}')}.`],
+      };
+    }
+    // Stufe 1 (Anzahlen) und 3 (Wahrscheinlichkeiten): Feld gegeben → Bedeutung?
+    const ziel = stufe === 1 ? R.wahl([...ZELLEN_INNEN, ...ZELLEN_RAND]) : R.wahl(ZELLEN_INNEN);
+    const anzeige = voll(m);
+    anzeige[ziel[0]][ziel[1]] = '(a)';
+    const richtigText = bedeutung(k, ziel[0], ziel[1], art);
+    const kand = new Set([richtigText]);
+    const [i, j] = ziel;
+    if (i < 2 && j < 2) {
+      kand.add(bedeutung(k, 1 - i, j, art));
+      kand.add(bedeutung(k, i, 1 - j, art));
+      if (wkeit) { kand.add(bedeutung(k, i, j, 'bedingt')); kand.add(bedeutung(k, i, j, 'bedingt', true)); }
+      kand.add(bedeutung(k, i, 2, art));
+    } else {
+      kand.add(i === 2 ? bedeutung(k, 2, 1 - j, art) : bedeutung(k, 1 - i, 2, art));
+      kand.add(i === 2 ? bedeutung(k, j === 0 ? 0 : 1, 2, art) : bedeutung(k, 2, i, art));
+      kand.add(i === 2 ? bedeutung(k, 0, j, art) : bedeutung(k, i, 0, art));
+    }
+    const ablenker = R.mische([...kand].slice(1)).slice(0, 3);
+    const optionen = R.mische([richtigText, ...ablenker]);
+    const wert = m[i][j];
+    return {
+      frage: `${k.wo} ${legende(k)} ${wkeit ? 'Die Vierfeldertafel enthält Wahrscheinlichkeiten. ' : ''}Was bedeutet die Zahl ${$(dz(wert))} im Feld (a)?`,
+      bild: tafelHtml(k, anzeige).replace('<b class="frage-zelle">(a)</b>', `<b class="frage-zelle">(a)</b> ${$(dz(wert))}`),
+      felder: [{ art: 'auswahl', optionen: optionen.map((o) => o.charAt(0).toUpperCase() + o.slice(1)), richtig: optionen.indexOf(richtigText) }],
+      hinweis: wkeit
+        ? 'In den inneren Feldern stehen Wahrscheinlichkeiten für „beides gleichzeitig“ – keine bedingten Wahrscheinlichkeiten. Bedingte Wahrscheinlichkeiten muss man erst ausrechnen.'
+        : 'Schau, in welcher Zeile und in welcher Spalte das Feld steht. Im Summenfeld zählt nur ein Merkmal.',
+      loesung: [
+        `Das Feld (a) liegt in Zeile ${$(i < 2 ? ltex(zeileLit(k, i)) : '\\text{Summe}')} und Spalte ${$(j < 2 ? ltex(spalteLit(k, j)) : '\\text{Summe}')}: ${richtigText}${wkeit ? `, also ${$(i < 2 && j < 2 ? PS(zeileLit(k, i), spalteLit(k, j)) : '')}` : ''}.`,
+        wkeit ? `Die bedingte Wahrscheinlichkeit ${$(PB(zeileLit(k, i), spalteLit(k, j)))} steht nicht in der Tafel, sie wird berechnet: ${$(`\\frac{${dz(wert)}}{${dz(m[i][2])}}`)}.` : '',
+      ].filter(Boolean),
     };
   };
 

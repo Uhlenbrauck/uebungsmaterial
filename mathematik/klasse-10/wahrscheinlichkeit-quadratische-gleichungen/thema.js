@@ -50,6 +50,11 @@
         ],
         "uebungen": [
           {
+            "gen": "wk-vft-bedeutung",
+            "titel": "Was bedeuten die Felder der Vierfeldertafel?",
+            "imTest": false
+          },
+          {
             "gen": "wk-vft-ergaenzen",
             "titel": "Vierfeldertafeln ergänzen"
           },
