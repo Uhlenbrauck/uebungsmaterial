@@ -47,7 +47,7 @@ test('Bruch: Eingaben werden erkannt', () => {
 });
 
 test('Sperre: gesperrte Terme werden neu erzeugt', () => {
-  assert.strictEqual(UM.gesperrteTerme.size, 11);
+  assert.strictEqual(UM.gesperrteTerme.size, 14);
   // Bekannter Term, der die Sperre auslösen muss (Beispiel, nicht aus der Arbeit):
   assert.strictEqual(UM.termHash('1+1'), UM.termHash('1+1'));
   // rz-multdiv Stufe 2 kann einen gesperrten Term liefern; über viele Durchläufe darf er nie erscheinen

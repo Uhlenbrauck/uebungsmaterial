@@ -937,7 +937,7 @@
     for (const c of t) { x ^= c.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; }
     return x.toString(16).padStart(8, '0');
   };
-  const GESPERRT = new Set(['9e8f4272', 'bac0212c', '4dbf99cf', '3c6ef886', 'f81d378d', '3a5c1334', '80b967dd', '549cec80', '85b63c1a', 'c3bc8dd1', '8f07597a']);
+  const GESPERRT = new Set(['9e8f4272', 'bac0212c', '4dbf99cf', '3c6ef886', 'f81d378d', '3a5c1334', '80b967dd', '549cec80', '85b63c1a', 'c3bc8dd1', '8f07597a', '693f49af', '79ae767e', '018aa829']);
   for (const [name, original] of Object.entries(gen)) {
     gen[name] = (stufe) => {
       let a = original(stufe);
