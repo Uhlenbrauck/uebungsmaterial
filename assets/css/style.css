@@ -138,7 +138,7 @@ details.realmath > summary { cursor: pointer; padding: .55rem .9rem; font-weight
 .aufgabe .frage { margin: .6rem 0; font-size: 1.05rem; }
 .term { font-size: 1.15rem; margin: .5rem 0; overflow-x: auto; overflow-y: hidden; }
 .bild { margin: .5rem 0; }
-.bild svg, .strahl-interaktiv svg { width: 100%; height: auto; max-width: 680px; display: block; }
+.bild > svg, .bild > .tabelle-scroll svg, .strahl-interaktiv svg { width: 100%; height: auto; max-width: 680px; display: block; }
 .felder { display: flex; flex-direction: column; gap: .6rem; margin: .6rem 0; }
 .feld { display: inline-flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 .feld-label { font-weight: 600; }
@@ -284,7 +284,7 @@ table.vft tr:last-child td, table.vft td:last-child { background: #f9fafc; }
 .bd-wert, .bd-pfad { font-size: 15px; text-anchor: middle; font-family: system-ui, sans-serif; fill: #1d2433; }
 .bd-pfad { text-anchor: start; }
 .bd-frage { fill: #1f4e8c; font-weight: 700; }
-.bild svg[aria-label="Baumdiagramm"] { max-width: 520px; }
+.bild > svg[aria-label="Baumdiagramm"] { max-width: 520px; }
 
 /* Koordinatensystem */
 .ks-gitter { stroke: #e3e7ef; stroke-width: 1; }
@@ -295,7 +295,7 @@ table.vft tr:last-child td, table.vft td:last-child { background: #f9fafc; }
 .ks-graph { fill: none; stroke: #2563c9; stroke-width: 2.5; }
 .ks-punkt { fill: #d92d20; }
 .ks-ptext { font-size: 13px; font-family: system-ui, sans-serif; fill: #d92d20; }
-.bild svg[aria-label="Graph einer Parabel"] { max-width: 360px; }
+.bild > svg[aria-label="Graph einer Parabel"] { max-width: 360px; }
 .option svg.klein { width: 140px; height: auto; display: block; }
 
 /* CAS-Eingaben */
@@ -311,3 +311,8 @@ code.cas { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fon
 .rechner-aus.fehler { color: var(--falsch); font-family: system-ui, sans-serif; font-size: .9rem; }
 .cas-eingabe { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; width: min(26rem, 100%); }
 .cas-ausgabe .rechner { margin-top: .3rem; }
+
+/* Rechenweg mit nummerierten Zeilen */
+ol.rechnung { background: #fff; border: 1px solid var(--linie); border-radius: 6px; padding: .5rem .8rem .5rem 2.6rem; margin: .4rem 0; max-width: 560px; }
+ol.rechnung li { padding: .2rem 0; }
+ol.rechnung li::marker { color: var(--leise, #5b6475); font-size: .9em; }
