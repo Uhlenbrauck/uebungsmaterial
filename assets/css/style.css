@@ -301,3 +301,13 @@ table.vft tr:last-child td, table.vft td:last-child { background: #f9fafc; }
 /* CAS-Eingaben */
 code.cas { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .95em; background: #eef1f6; border: 1px solid var(--linie); border-radius: 4px; padding: .05rem .3rem; white-space: nowrap; }
 .eingabe::placeholder { color: #a2a9b6; }
+
+/* Rechner-Seite der CAS-App */
+.rechner { background: #fff; border: 1px solid #9aa6bb; border-radius: 6px; max-width: 560px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .95rem; margin: .4rem 0; }
+.rechner-zeile { padding: .35rem .6rem; border-bottom: 1px solid #e3e7ef; }
+.rechner-zeile:last-child { border-bottom: 0; }
+.rechner-ein { text-align: left; }
+.rechner-aus { text-align: right; color: #1f4e8c; }
+.rechner-aus.fehler { color: var(--falsch); font-family: system-ui, sans-serif; font-size: .9rem; }
+.cas-eingabe { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; width: min(26rem, 100%); }
+.cas-ausgabe .rechner { margin-top: .3rem; }

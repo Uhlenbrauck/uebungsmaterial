@@ -13,6 +13,7 @@ assets/
   js/bruch.js                  exakte Bruchrechnung, Erkennen von Eingaben (−3,5 · −7/4 · −1 3/4)
   js/loesungen.js              Lösungsmengen mit Wurzeln ({−√2; √2}), gerundete Werte und Prozentangaben
   js/zufall.js                 Zufallshilfen für alle Generatoren
+  js/cas.js                    CAS-Eingaben (TI-Nspire) prüfen: gleichwertige Formen, typische Fehler, Rechner-Seite
   js/term.js                   Termbäume: Wert und Formel aus derselben Struktur
   js/zahlenstrahl.js           Zahlenstrahl als SVG (Bild, Pfeilbild, zum Anklicken)
   js/aufgaben.js               Darstellung und Prüfung einer Aufgabe

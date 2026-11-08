@@ -94,6 +94,34 @@
     }
   }
 
+  /** CAS-Eingabe: Befehl wie in der App; nach richtiger Eingabe ggf. Ausgabe der Rechner-Seite */
+  function casFeld(f, kontext) {
+    const input = el('input', {
+      type: 'text', class: 'eingabe breit cas-eingabe', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+      inputmode: 'text', 'aria-label': 'CAS-Eingabe', placeholder: f.platzhalter || false,
+    });
+    input.addEventListener('focus', () => { kontext.letztesFeld = input; });
+    input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') kontext.enter(); });
+    const zeile = el('label', { class: 'feld' }, f.label ? mathe(el('span', { class: 'feld-label', html: f.label })) : null, input);
+    const meldung = el('div', { class: 'feld-meldung' });
+    const ausgabe = el('div', { class: 'cas-ausgabe', hidden: true });
+    return {
+      knoten: el('div', { class: 'feld-block' }, zeile, meldung, ausgabe),
+      pruefen() {
+        const r = UM.pruefeCas(input.value, f.soll);
+        zeile.classList.toggle('ok', r.ok);
+        zeile.classList.toggle('falsch', !r.ok);
+        meldung.textContent = r.ok ? '' : r.meldung;
+        if (r.ok && f.ausgabe) {
+          ausgabe.innerHTML = UM.rechnerSeite([...(f.vorher || []), { ein: input.value.trim(), aus: f.ausgabe }]);
+          ausgabe.hidden = false;
+        }
+        return r.ok;
+      },
+      sperren() { input.readOnly = true; },
+    };
+  }
+
   let gruppenZaehler = 0;
   function auswahlFeld(f) {
     const name = 'auswahl-' + ++gruppenZaehler;
@@ -191,11 +219,12 @@
     const modus = optionen.modus || 'uebung';
     const kontext = { letztesFeld: null, enter: () => pruefen() };
     const felder = aufgabe.felder.map((f) =>
-      f.art === 'zahl' || f.art === 'menge' || f.art === 'naeherung' ? zahlFeld(f, kontext) : f.art === 'summe' ? zahlFeld(f, kontext, true) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
+      f.art === 'cas' ? casFeld(f, kontext) : f.art === 'zahl' || f.art === 'menge' || f.art === 'naeherung' ? zahlFeld(f, kontext) : f.art === 'summe' ? zahlFeld(f, kontext, true) : f.art === 'auswahl' ? auswahlFeld(f) : f.art === 'strahl' ? strahlFeld(f) : mengenFeld(f),
     );
-    const hatZahl = aufgabe.felder.some((f) => ['zahl', 'summe', 'menge', 'naeherung'].includes(f.art));
-    const tasten = [['−', '-'], ['/', '/'], [',', ',']];
-    if (aufgabe.felder.some((f) => f.art === 'menge')) tasten.push([';', '; '], ['√', '√'], ['{ }', '{}']);
+    const nurCas = aufgabe.felder.some((f) => f.art === 'cas');
+    const hatZahl = nurCas || aufgabe.felder.some((f) => ['zahl', 'summe', 'menge', 'naeherung'].includes(f.art));
+    const tasten = nurCas ? [[':=', ':='], ['^', '^'], ['*', '*'], ['(', '('], [')', ')'], ['.', '.'], [',', ',']] : [['−', '-'], ['/', '/'], [',', ',']];
+    if (!nurCas && aufgabe.felder.some((f) => f.art === 'menge')) tasten.push([';', '; '], ['√', '√'], ['{ }', '{}']);
     if (aufgabe.felder.some((f) => f.art === 'naeherung' && f.prozent)) tasten.push(['%', ' %']);
     if (aufgabe.felder.some((f) => f.art === 'zahl' || f.art === 'summe')) tasten.push(['Leer', ' ']);
     const rueck = el('div', { class: 'rueckmeldung', 'aria-live': 'polite' });
