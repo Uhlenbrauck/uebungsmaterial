@@ -410,10 +410,77 @@
           {
             "gen": "qf-ausklammern",
             "titel": "Nullstellen von f(x) = a·x² + b·x"
+          }
+        ]
+      },
+      {
+        "id": "quadratische-ergaenzung",
+        "zeilen": [
+          "Ich kann eine quadratische Ergänzung durchführen und …",
+          "… ich kann damit quadratische Gleichungen und Nullstellen von Parabeln berechnen (auch wenn vor $x^2$ eine Zahl steht).",
+          "Ich kann entscheiden, welches Verfahren zur Nullstellenberechnung am schnellsten zum Ziel führt."
+        ],
+        "notizbuch": [
+          {
+            "titel": "Kl. 9: 14.11. | AB 09 - Quadratische Ergänzung",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch/_Inhaltsbibliothek/10.2%20Quadratische%20Gleichungen.one#14.11.%20%7C%20AB%2009%20-%20Quadratische%20Erg%C3%A4nzung&section-id=cfcabd96-8dcc-44bc-8f8d-4486dbada660&page-id=f76ec403-12f8-6944-a617-839f79ded9de&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F10.2%20Quadratische%20Gleichungen.one%7Ccfcabd96-8dcc-44bc-8f8d-4486dbada660%2F14.11.%20%5C%7C%20AB%2009%20-%20Quadratische%20Erg%C3%A4nzung%7Cf76ec403-12f8-6944-a617-839f79ded9de%2F%29"
+          },
+          {
+            "titel": "Kl. 9: 21.11. | AB 10 - Quadratische Ergänzung 2",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch/_Inhaltsbibliothek/10.2%20Quadratische%20Gleichungen.one#21.11.%20%7C%20AB%2010%20-%20Quadratische%20Erg%C3%A4nzung%20&section-id=cfcabd96-8dcc-44bc-8f8d-4486dbada660&page-id=673fcdb0-c9be-2248-8997-466dd3ea4b60&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/2026_27_10c_M_Uhl/SiteAssets/2026_27_10c_M_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F10.2%20Quadratische%20Gleichungen.one%7Ccfcabd96-8dcc-44bc-8f8d-4486dbada660%2F21.11.%20%5C%7C%20AB%2010%20-%20Quadratische%20Erg%C3%A4nzung%20%7C673fcdb0-c9be-2248-8997-466dd3ea4b60%2F%29"
+          }
+        ],
+        "uebungen": [
+          {
+            "gen": "qe-ergaenzen",
+            "titel": "Quadratisch ergänzen"
+          },
+          {
+            "gen": "qe-binom-loesen",
+            "titel": "Gleichungen der Form (x + d)² = r lösen"
+          },
+          {
+            "gen": "qe-loesen",
+            "titel": "Gleichungen mit quadratischer Ergänzung lösen"
+          },
+          {
+            "gen": "qe-fehler",
+            "titel": "Fehler in einer Rechnung finden",
+            "imTest": false
+          },
+          {
+            "gen": "qe-scheitelpunkt",
+            "titel": "Scheitelpunkt mit quadratischer Ergänzung (Wiederholung Kl. 9)",
+            "imTest": false
           },
           {
             "gen": "qf-nullstellen-gemischt",
             "titel": "Gemischt: Welches Verfahren passt?"
+          }
+        ],
+        "realmath": [
+          {
+            "gruppe": null,
+            "links": [
+              {
+                "titel": "(x ± a)² = 0",
+                "url": "https://realmath.de/Neues/Klasse9/quadgleich/quagleich02.php"
+              },
+              {
+                "titel": "(x ± a)² ± b = 0",
+                "url": "https://realmath.de/Neues/Klasse9/quadgleich/quagleich03.php"
+              },
+              {
+                "titel": "x² ± bx ± c = 0",
+                "url": "https://realmath.de/Neues/Klasse9/quadgleich/quagleich04.php"
+              },
+              {
+                "titel": "Scheitelpunkt mit quadratischer Ergänzung",
+                "url": "https://realmath.de/Neues/Klasse9/parabueb/parabelscheitel01.php"
+              }
+            ]
           }
         ]
       },

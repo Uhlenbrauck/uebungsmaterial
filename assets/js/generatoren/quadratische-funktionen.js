@@ -475,17 +475,211 @@
     };
   };
 
+  // =====================================================================
+  // K10 Quadratische Ergänzung
+  // =====================================================================
+
+  /** √r für einen Bruch r ≥ 0 als Wurzel-Wert (teilweise radiziert) */
+  const wurzelAus = (r) => new Wurzel(B(1, r.n), r.z * r.n);
+  /** Lösungen von (x + d)² = r */
+  function loesBinom(d, r) {
+    if (r.vgl(0) < 0) return [];
+    if (r.z === 0) return [d.neg()];
+    const w = wurzelAus(r);
+    const plus = new Wurzel(w.q, w.r, d.neg().plus(w.istRational() ? w.p : B(0)));
+    if (w.istRational()) return [new Wurzel(0, 1, d.neg().plus(w.p)), new Wurzel(0, 1, d.neg().minus(w.p))];
+    return [plus, plus.konj()];
+  }
+  /** TeX: x + d (d mit Vorzeichen) */
+  const xPlus = (d) => (d.z === 0 ? 'x' : d.vgl(0) > 0 ? `x+${zt(d)}` : `x-${zt(d.neg())}`);
+  /** TeX für (p/2)² bzw. die Ergänzungszahl, Klammern bei negativen Zahlen/Brüchen */
+  const kl = (b) => (b.vgl(0) < 0 || !b.istGanz() ? `\\left(${zt(b)}\\right)` : zt(b));
+
+  /** Lösungsweg mit quadratischer Ergänzung für x² + p·x + q = 0 */
+  function qeWeg(p, q) {
+    const h = p.durch(2);
+    const r = h.mal(h).minus(q);
+    const L = loesBinom(h, r);
+    const z = [];
+    z.push($(`${polyTex(B(1), p, q)}=0\\;\\;\\Big|\\;${q.vgl(0) > 0 ? '-' + zt(q) : '+' + zt(q.neg())}`));
+    z.push($(`${polyTex(B(1), p, B(0))}=${zt(q.neg())}\\;\\;\\Big|\\;+${kl(h)}^2`));
+    z.push($(`${polyTex(B(1), p, B(0))}+${kl(h)}^2=${zt(q.neg())}+${kl(h)}^2`));
+    z.push($(`(${xPlus(h)})^2=${zt(r)}`));
+    if (r.vgl(0) < 0) z.push(`Ein Quadrat ist nie negativ: keine Lösung, ${$('\\mathbb{L}=\\{\\,\\}')}.`);
+    else if (r.z === 0) z.push($(`${xPlus(h)}=0\\;\\Leftrightarrow\\; x=${zt(h.neg())}`) + `, also ${$(`\\mathbb{L}=\\{${zt(h.neg())}\\}`)}.`);
+    else {
+      const w = wurzelAus(r);
+      const wt = w.istRational() ? zt(w.p) : w.tex();
+      z.push($(`${xPlus(h)}=${wt}\\;\\vee\\; ${xPlus(h)}=-${wt}`));
+      z.push(`${$(`\\mathbb{L}=${UM.mengeTex(L)}`)}`);
+    }
+    return { h, r, L, zeilen: z };
+  }
+
+  gen['qe-ergaenzen'] = (stufe) => {
+    const p = stufe === 1 ? B(2 * R.nz(-6, 6)) : stufe === 2 ? B(2 * R.int(0, 6) + 1).mal(R.vz()) : R.wahl([B(R.nz(-5, 5), 3), B(R.nz(-9, 9), 5), B(R.nz(-9, 9), 10).mal(2)]);
+    if (stufe === 3 && p.istGanz()) return gen['qe-ergaenzen'](stufe);
+    const h = p.durch(2);
+    return {
+      frage: `Ergänze so, dass eine binomische Formel entsteht: ${$(`${polyTex(B(1), p, B(0))}+\\square=(x+\\triangle)^2`)}. Gib die Zahl für ${$('\\square')} und für ${$('\\triangle')} an (${$('\\triangle')} mit Vorzeichen).`,
+      felder: [{ art: 'zahl', label: '$\\square=$', antwort: h.mal(h) }, { art: 'zahl', label: '$\\triangle=$', antwort: h }],
+      hinweis: `Halbiere die Zahl vor ${$('x')} – das ist ${$('\\triangle')}. Die Ergänzung ${$('\\square')} ist das Quadrat davon.`,
+      notiz: stufe > 1,
+      loesung: [
+        `Zahl vor ${$('x')}: ${$(`p=${zt(p)}`)}, die Hälfte ist ${$(`${zt(h)}`)}, das Quadrat ${$(`${kl(h)}^2=${zt(h.mal(h))}`)}.`,
+        $(`${polyTex(B(1), p, B(0))}+${zt(h.mal(h))}=(${xPlus(h)})^2`),
+      ],
+    };
+  };
+
+  gen['qe-binom-loesen'] = (stufe) => {
+    let d, r;
+    if (stufe === 1) { d = B(R.nz(-6, 6)); const s = R.int(1, 6); r = B(s * s); }
+    else if (stufe === 2) { d = B(R.nz(-6, 6)); r = R.wahl([B(R.wahl([2, 3, 5, 6, 7, 8, 10, 12, 18])), B(R.wahl([2, 3, 5, 7])), B(0), B(-R.int(1, 9))]); }
+    else { d = B(R.nz(-9, 9), 2); r = R.wahl([B(R.int(1, 5) ** 2, 4), B(R.wahl([5, 3, 7, 13]), 4), B(R.wahl([1, 9, 3]), 2)]); }
+    const L = loesBinom(d, r);
+    const w = r.vgl(0) > 0 ? wurzelAus(r) : null;
+    return {
+      frage: 'Löse die Gleichung und gib die Lösungsmenge an.',
+      term: `(${xPlus(d)})^2=${zt(r)}`,
+      felder: [mengeFeld(L)],
+      hinweis: `Ziehe die Wurzel: ${$(`${xPlus(d)}=\\sqrt{${zt(r)}}`)} oder ${$(`${xPlus(d)}=-\\sqrt{${zt(r)}}`)} – dann ${$('x')} allein stellen. Wurzeln gibst du z. B. so ein: −3+√7 oder −3±√7.`,
+      notiz: stufe > 1,
+      loesung: r.vgl(0) < 0
+        ? [`Ein Quadrat ist nie negativ: ${$('\\mathbb{L}=\\{\\,\\}')}.`]
+        : r.z === 0
+          ? [$(`${xPlus(d)}=0\\;\\Leftrightarrow\\; x=${zt(d.neg())}`), $(`\\mathbb{L}=\\{${zt(d.neg())}\\}`)]
+          : [
+            $(`${xPlus(d)}=${w.istRational() ? zt(w.p) : w.tex()}\\;\\vee\\; ${xPlus(d)}=-${w.istRational() ? zt(w.p) : w.tex()}`),
+            $(`\\mathbb{L}=${UM.mengeTex(L)}`),
+          ],
+    };
+  };
+
+  /** Koeffizienten für x² + p·x + q = 0 je Stufe */
+  function qeGleichung(stufe) {
+    if (stufe === 1) {
+      // ganzzahlige Lösungen, p gerade
+      const r1 = R.int(-7, 7);
+      const r2 = r1 + 2 * R.nz(-5, 5);
+      return { a: B(1), p: B(-(r1 + r2)), q: B(r1 * r2) };
+    }
+    if (stufe === 2) {
+      const h = B(R.nz(-6, 6));
+      const r = R.wahl([B(R.wahl([2, 3, 5, 6, 7, 8, 10, 11, 12, 13])), B(R.wahl([2, 3, 5, 7])), B(R.int(1, 5) ** 2), B(0), B(-R.int(1, 6))]);
+      return { a: B(1), p: h.mal(2), q: h.mal(h).minus(r) };
+    }
+    // Stufe 3: a ≠ 1 und/oder p ungerade
+    const a = R.wahl([B(2), B(3), B(-1), B(-2), B(1, 2), B(1)]);
+    const p = a.gleich(1) ? B(2 * R.int(0, 4) + 1).mal(R.vz()) : B(R.nz(-8, 8));
+    const q = B(R.int(-12, 12), a.gleich(1) ? 4 : 1);
+    if (q.z === 0) return qeGleichung(stufe);
+    return { a, p, q };
+  }
+
+  gen['qe-loesen'] = (stufe) => {
+    const { a, p, q } = qeGleichung(stufe);
+    // Gleichung a·x² + a·p·x + a·q = 0 anzeigen
+    const A = a, Bk = a.mal(p), C = a.mal(q);
+    const weg = qeWeg(p, q);
+    const alsFunktion = stufe > 1 && Math.random() < 0.5;
+    const felder = stufe < 3
+      ? [{ art: 'zahl', label: '$d=$', antwort: weg.h }, { art: 'zahl', label: '$r=$', antwort: weg.r }, mengeFeld(weg.L)]
+      : [mengeFeld(weg.L)];
+    return {
+      frage: `${alsFunktion ? `Berechne ohne CAS die Nullstellen von ${$(`f(x)=${polyTex(A, Bk, C)}`)} mit quadratischer Ergänzung.` : `Löse ohne CAS mit quadratischer Ergänzung: ${$(`${polyTex(A, Bk, C)}=0`)}.`}${stufe < 3 ? ` Gib zuerst ${$('d')} und ${$('r')} aus ${$('(x+d)^2=r')} an, dann die Lösungsmenge.` : ''}`,
+      felder,
+      hinweis: `${A.gleich(1) ? '' : `Teile zuerst durch ${$(zt(A))}, damit vor ${$('x^2')} nur noch 1 steht. `}Bring die Zahl ohne ${$('x')} auf die rechte Seite, ergänze auf beiden Seiten ${$('\\left(\\frac{p}{2}\\right)^2')} und schreibe links als ${$('(x+d)^2')}. Dann Wurzel ziehen (zwei Fälle!).`,
+      notiz: true,
+      loesung: [
+        ...(A.gleich(1) ? [] : [$(`${polyTex(A, Bk, C)}=0\\;\\;\\Big|\\;:${kl(A)}`)]),
+        ...weg.zeilen,
+        weg.L.length ? `Nullstellen bzw. Schnittpunkte mit der x-Achse: ${weg.L.map((w) => $(`(${Wurzel.von(w).tex()}\\,|\\,0)`)).join(' und ')}.` : 'Die Parabel hat keine Nullstelle.',
+      ],
+    };
+  };
+
+  gen['qe-fehler'] = (stufe) => {
+    // Rechnung mit genau einem Fehler – welche Zeile?
+    let p, q;
+    for (;;) {
+      const g = qeGleichung(stufe === 1 ? 1 : 2);
+      p = g.p; q = g.q;
+      const r = p.durch(2).mal(p.durch(2)).minus(q);
+      if (r.vgl(0) > 0 && q.z !== 0 && p.z !== 0) break;
+    }
+    const h = p.durch(2);
+    const r = h.mal(h).minus(q);
+    const L = loesBinom(h, r);
+    const w = wurzelAus(r);
+    const wt = w.istRational() ? zt(w.p) : w.tex();
+    const richtig = [
+      `${polyTex(B(1), p, q)}=0`,
+      `${polyTex(B(1), p, B(0))}=${zt(q.neg())}`,
+      `${polyTex(B(1), p, B(0))}+${kl(h)}^2=${zt(q.neg())}+${kl(h)}^2`,
+      `(${xPlus(h)})^2=${zt(r)}`,
+      `${xPlus(h)}=${wt}\\;\\vee\\; ${xPlus(h)}=-${wt}`,
+      `\\mathbb{L}=${UM.mengeTex(L)}`,
+    ];
+    const FEHLER = [
+      { zeile: 1, text: `${polyTex(B(1), p, B(0))}=${zt(q)}`, warum: 'Beim Herüberbringen der Zahl wurde das Vorzeichen nicht geändert.' },
+      { zeile: 2, text: `${polyTex(B(1), p, B(0))}+${kl(h)}^2=${zt(q.neg())}`, warum: 'Die Ergänzung muss auf beiden Seiten addiert werden.' },
+      { zeile: 2, text: `${polyTex(B(1), p, B(0))}+${kl(p)}^2=${zt(q.neg())}+${kl(p)}^2`, warum: `Ergänzt wird das Quadrat der <b>Hälfte</b> der Zahl vor ${$('x')}, also ${$(`${kl(h)}^2`)}.` },
+      { zeile: 3, text: `(${xPlus(h.neg())})^2=${zt(r)}`, warum: `Das Vorzeichen in der Klammer stimmt nicht: ${$(`${polyTex(B(1), p, B(0))}+${kl(h)}^2=(${xPlus(h)})^2`)}.` },
+      { zeile: 4, text: `${xPlus(h)}=${wt}`, warum: 'Beim Wurzelziehen gibt es zwei Fälle: positive und negative Wurzel. Der negative Fall fehlt.' },
+    ];
+    const f = R.wahl(FEHLER);
+    const zeilen = richtig.slice();
+    zeilen[f.zeile] = f.text;
+    if (f.zeile === 4) zeilen[5] = `\\mathbb{L}=${UM.mengeTex([L[L.length - 1]])}`;
+    const bild = `<ol class="rechnung">${zeilen.map((z) => `<li>$${z}$</li>`).join('')}</ol>`;
+    const optionen = [1, 2, 3, 4].map((n) => `Zeile ${n + 1}`);
+    return {
+      frage: 'In dieser Rechnung mit quadratischer Ergänzung steckt genau ein Fehler. In welcher Zeile passiert er zuerst?',
+      bild,
+      felder: [{ art: 'auswahl', optionen, richtig: f.zeile - 1 }],
+      hinweis: 'Prüfe jeden Schritt einzeln: Vorzeichen beim Umstellen, Ergänzung auf beiden Seiten, Hälfte der Zahl vor x, Vorzeichen in der Klammer, beide Fälle beim Wurzelziehen.',
+      loesung: [`Fehler in Zeile ${f.zeile + 1}: ${f.warum}`, 'Richtig wäre:', `<ol class="rechnung">${richtig.map((z) => `<li>$${z}$</li>`).join('')}</ol>`],
+    };
+  };
+
+  gen['qe-scheitelpunkt'] = (stufe) => {
+    // Scheitelpunkt mit quadratischer Ergänzung (Wiederholung Klasse 9)
+    const a = stufe === 3 ? R.wahl([B(2), B(-1), B(3), B(-2), B(1, 2)]) : B(1);
+    const p = stufe === 1 ? B(2 * R.nz(-5, 5)) : B(R.nz(-9, 9));
+    const c = B(R.int(-9, 9));
+    const h = p.durch(2);
+    // f(x) = a·(x² + p·x) + c = a·(x + h)² − a·h² + c
+    const e = c.minus(a.mal(h).mal(h));
+    const fTex = polyTex(a, a.mal(p), c);
+    return {
+      frage: `Bestimme ohne CAS mit quadratischer Ergänzung die Scheitelform und den Scheitelpunkt von ${$(`f(x)=${fTex}`)}.`,
+      felder: [{ art: 'zahl', label: '$x_S$', antwort: h.neg() }, { art: 'zahl', label: '$y_S$', antwort: e }],
+      hinweis: `${a.gleich(1) ? '' : `Klammere zuerst ${$(zt(a))} aus den Gliedern mit ${$('x')} aus. `}Ergänze ${$('\\left(\\frac{p}{2}\\right)^2')} und ziehe es gleich wieder ab, dann binomische Formel.`,
+      notiz: true,
+      loesung: [
+        a.gleich(1)
+          ? $(`f(x)=${polyTex(B(1), p, B(0))}+${kl(h)}^2-${kl(h)}^2${c.vgl(0) < 0 ? zt(c) : c.z ? '+' + zt(c) : ''}`)
+          : $(`f(x)=${zt(a)}\\cdot\\left(${polyTex(B(1), p, B(0))}+${kl(h)}^2-${kl(h)}^2\\right)${c.vgl(0) < 0 ? zt(c) : c.z ? '+' + zt(c) : ''}`),
+        $(`f(x)=${scheitelTex(a, h.neg(), e)}`),
+        `Scheitelpunkt ${$(`S(${zt(h.neg())}\\,|\\,${zt(e)})`)}.`,
+      ],
+    };
+  };
+
   gen['qf-nullstellen-gemischt'] = (stufe) => {
-    // Welches Verfahren passt? Dann lösen.
-    const typ = R.wahl(['rein', 'svn']);
-    const a = gen[typ === 'rein' ? 'qf-reinquadratisch' : 'qf-ausklammern'](stufe);
-    // f(x) = a·x² allein passt zu beiden Verfahren → neu würfeln
-    if (a.felder[0].antwort.length === 1) return gen['qf-nullstellen-gemischt'](stufe);
-    const optionen = ['$x^2$ allein stellen (reinquadratische Gleichung)', '$x$ ausklammern, dann Satz vom Nullprodukt'];
+    // Welches Verfahren passt am besten? Dann lösen.
+    const typ = R.wahl(['rein', 'svn', 'qe']);
+    const a = gen[typ === 'rein' ? 'qf-reinquadratisch' : typ === 'svn' ? 'qf-ausklammern' : 'qe-loesen'](stufe === 1 ? 2 : stufe);
+    const menge = a.felder.find((f) => f.art === 'menge');
+    // f(x) = a·x² allein passt zu mehreren Verfahren → neu würfeln
+    if (typ !== 'qe' && menge.antwort.length === 1) return gen['qf-nullstellen-gemischt'](stufe);
+    const optionen = ['$x^2$ allein stellen (reinquadratische Gleichung)', '$x$ ausklammern, dann Satz vom Nullprodukt', 'Quadratische Ergänzung'];
+    const richtig = { rein: 0, svn: 1, qe: 2 }[typ];
     return Object.assign(a, {
-      frage: a.frage.replace('Berechne ohne CAS', 'Entscheide, welches Verfahren passt, und berechne ohne CAS'),
-      felder: [{ art: 'auswahl', label: 'Verfahren', optionen, richtig: typ === 'rein' ? 0 : 1 }, ...a.felder],
-      hinweis: `Fehlt das Glied mit ${$('x')} (Form ${$('ax^2+c')}), stellst du ${$('x^2')} allein. Fehlt die Zahl ohne ${$('x')} (Form ${$('ax^2+bx')}), klammerst du ${$('x')} aus.`,
+      frage: a.frage.replace(/ Gib zuerst .*$/, '').replace(' mit quadratischer Ergänzung', '').replace('Löse ohne CAS:', 'Löse ohne CAS').replace('Berechne ohne CAS', 'Berechne ohne CAS').replace(/^/, 'Entscheide, welches Verfahren am schnellsten zum Ziel führt. '),
+      felder: [{ art: 'auswahl', label: 'Verfahren', optionen, richtig }, menge],
+      hinweis: `Form ${$('ax^2+c')} (kein Glied mit ${$('x')}): ${$('x^2')} allein stellen. Form ${$('ax^2+bx')} (keine Zahl ohne ${$('x')}): ${$('x')} ausklammern. Alle drei Glieder vorhanden: quadratische Ergänzung.`,
     });
   };
 
