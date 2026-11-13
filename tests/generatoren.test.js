@@ -181,6 +181,48 @@ test('CAS: gleichwertige Eingaben und typische Fehler', () => {
   nein('f(3,5)', { art: 'wert', arg: 3.5 }, 'Dezimalpunkt');
 });
 
+test('CAS: binomPdf mit typischen Fehlern', () => {
+  const s = { art: 'binompdf', n: 10, p: 0.2, k: 3 };
+  const ok = (e, soll = s) => assert.ok(UM.pruefeCas(e, soll).ok, e);
+  const nein = (e, teil, soll = s) => { const r = UM.pruefeCas(e, soll); assert.ok(!r.ok, e); assert.ok(r.meldung.includes(teil), `${e}: ${r.meldung}`); };
+  ok('binomPdf(10,0.2,3)');
+  ok('BINOMPDF(10, .2, 3)');
+  ok('binomPdf(10,1/5,3)');
+  ok('binomPdf(8,1/6,2)', { art: 'binompdf', n: 8, p: 1 / 6, k: 2 });
+  nein('binomPdf(10,3,0.2)', 'Reihenfolge');
+  nein('binomPdf(0.2,10,3)', 'Reihenfolge');
+  nein('binomPdf(10,0,2,3)', 'Dezimalpunkt');
+  nein('binomPdf(10,0.2)', 'drei Angaben');
+  nein('binomCdf(10,0.2,3)', 'anderer Befehl');
+  nein('binomPdf(10,2,3)', 'Trefferwahrscheinlichkeit');
+  nein('binomPdf(10,0.2,4)', 'Inhalt');
+});
+
+test('Binomialverteilung: Rechnung stimmt', () => {
+  const { bk, pdf, pdfExakt } = UM.binomial;
+  assert.strictEqual(bk(10, 3), 120);
+  assert.strictEqual(bk(30, 15), 155117520);
+  assert.ok(Math.abs(pdf(10, 0.2, 3) - 0.201326592) < 1e-12);
+  assert.ok(pdfExakt(4, new UM.Bruch(1, 2), 2).gleich(new UM.Bruch(3, 8)));
+  // Summe aller Wahrscheinlichkeiten ist 1
+  for (const [n, p] of [[12, 1 / 6], [20, 0.85], [7, 0.3]]) {
+    let s = 0;
+    for (let k = 0; k <= n; k++) s += pdf(n, p, k);
+    assert.ok(Math.abs(s - 1) < 1e-12, `${n}, ${p}`);
+  }
+});
+
+test('Binomialverteilung: angezeigte Ausgabe passt zum Ergebnisfeld', () => {
+  for (let i = 0; i < 2000; i++) {
+    const a = UM.generatoren['bv-cas'](2 + (i % 2));
+    const cas = a.felder.find((f) => f.art === 'cas');
+    const w = a.felder.find((f) => f.art === 'naeherung');
+    const { n, p, k } = cas.soll;
+    assert.ok(Math.abs(UM.binomial.pdf(n, p, k) - w.wert) < 1e-12);
+    assert.ok(Math.abs(Number(cas.ausgabe) - w.wert) < 1e-5, cas.ausgabe);
+  }
+});
+
 test('Vergleich: richtiges Zeichen', () => {
   for (let i = 0; i < 500; i++) {
     const a = UM.generatoren['rz-vergleich'](1 + (i % 3));
@@ -206,7 +248,7 @@ test('Fehler finden: Aufgabe ist wirklich falsch, Lösung richtig', () => {
   }
 });
 
-for (const pfad of ['mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
+for (const pfad of ['mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js', 'mathematik/q2/binomialverteilung/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
   const UMt = lade(...ALLE, pfad);
   const ids = new Set();
   for (const k of UMt.thema.kompetenzen) {

@@ -8,6 +8,7 @@
  *     { art:'solve', links, rechts, f? }             solve(links=rechts,x) – gleichwertige Gleichungen zählen
  *     { art:'completesquare', ausdruck, f? }         completeSquare(ausdruck,x)
  *     { art:'factor', ausdruck, f? }                 factor(ausdruck) oder factor(ausdruck,x)
+ *     { art:'binompdf', n, p, k }                    binomPdf(n,p,k) – Angaben dürfen Terme sein (1/6); vertauschte Angaben werden erkannt
  *   Ausdrücke in CAS-Schreibweise (Dezimalpunkt, *, ^). f = Term von f(x), falls f(x) in der Eingabe vorkommt.
  *
  * Gleichwertigkeit wird numerisch an mehreren Stellen geprüft (Terme in x).
@@ -19,7 +20,7 @@
   'use strict';
   const UM = (global.UM = global.UM || {});
 
-  const BEFEHLE = { solve: 'solve', completesquare: 'completeSquare', factor: 'factor' };
+  const BEFEHLE = { solve: 'solve', completesquare: 'completeSquare', factor: 'factor', binompdf: 'binomPdf', binomcdf: 'binomCdf' };
 
   /** Vereinheitlichen: klein, ohne Leerzeichen, Malzeichen als * */
   function normal(text) {
@@ -192,6 +193,9 @@
     zuViele: 'Der Befehl hat zu viele Teile. Prüfe Kommas (Dezimalpunkt statt Komma!) und Klammern.',
     inhalt: 'Der Befehl ist richtig, aber der Inhalt stimmt noch nicht.',
     unlesbar: 'Diese Eingabe kann die CAS-App so nicht lesen. Prüfe Schreibweise und Malzeichen.',
+    binomAnzahl: 'binomPdf braucht genau drei Angaben: binomPdf(n,p,k).',
+    binomReihenfolge: 'Die Zahlen stimmen, aber die Reihenfolge nicht: zuerst n, dann p, dann k – binomPdf(n,p,k).',
+    binomP: 'Die zweite Angabe ist die Trefferwahrscheinlichkeit p – eine Zahl zwischen 0 und 1.',
   };
 
   /** Hat die Eingabe Dezimalkommas (Ziffer,Ziffer), die zu viele Argumente erzeugen? */
@@ -230,6 +234,19 @@
     if (!BEFEHLE[name]) return { ok: false, meldung: name === 'f' ? M.befehl('f(…)') : M.unlesbar };
     if (name !== soll.art) return { ok: false, meldung: M.befehl(BEFEHLE[name]) };
     const args = argumente(m[2]);
+
+    if (soll.art === 'binompdf') {
+      if (args.length !== 3) return { ok: false, meldung: args.length > 3 && hatDezimalKomma(m[2]) ? M.komma : M.binomAnzahl };
+      const w = args.map((a) => uebersetze(a));
+      if (w.some((f) => !f)) return { ok: false, meldung: M.unlesbar };
+      const [a, b, c] = w.map((f) => f({ x: NaN }));
+      if (nah(a, soll.n) && nah(b, soll.p) && nah(c, soll.k)) return { ok: true };
+      const soll3 = [soll.n, soll.p, soll.k].sort((x, y) => x - y);
+      const ist3 = [a, b, c].sort((x, y) => x - y);
+      if (soll3.every((x, i) => nah(x, ist3[i]))) return { ok: false, meldung: M.binomReihenfolge };
+      if (!(b >= 0 && b <= 1)) return { ok: false, meldung: M.binomP };
+      return { ok: false, meldung: M.inhalt };
+    }
 
     if (soll.art === 'solve') {
       if (args.length === 1) return { ok: false, meldung: args[0].includes('=') ? M.variable : M.gleichung };
