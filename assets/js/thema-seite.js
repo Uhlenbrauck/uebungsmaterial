@@ -1,6 +1,9 @@
 /*
  * Baut eine Themenseite aus UM.thema (siehe mathematik/…/thema.js):
  * Checkliste zur Selbsteinschätzung, Übungen je Kompetenz, Abschlusstest.
+ * thema.einschaetzung === false: Übungen zum laufenden Unterricht – statt der Checkliste eine Liste
+ * „Was übe ich hier?“ ohne Selbsteinschätzung (die Zeilen können später in eine Checkliste übernommen werden).
+ * thema.arbeit: Wort für die Prüfung in den Texten (Standard „Klassenarbeit“, z. B. „Klausur“).
  * Der Fortschritt bleibt nur in diesem Browser (localStorage), es werden keine Daten verschickt.
  */
 (function (global) {
@@ -48,6 +51,10 @@
 
   function starte(thema) {
     const s = speicher(thema.id);
+    const mitEinschaetzung = thema.einschaetzung !== false;
+    const arbeit = thema.arbeit || 'Klassenarbeit';
+    const LISTE = mitEinschaetzung ? 'Das muss ich können' : 'Darum geht es';
+    const mitInfo = mitEinschaetzung || thema.kompetenzen.some((k) => k.notizbuch || k.buch);
     const haupt = document.getElementById('inhalt');
     document.title = `${thema.titel} – Übungsmaterial`;
 
@@ -57,15 +64,21 @@
       el('section', { class: 'kasten anleitung' },
         el('h2', {}, 'So übst du mit dieser Seite'),
         datenschutz(['Diese Seite ist nur für dich zum Üben. ', el('b', {}, 'Nichts von dem, was du hier eingibst, löst oder einschätzt, wird übertragen – weder an deinen Lehrer noch an jemand anderen.'), ' Es wird nichts benotet. Dein Fortschritt wird nur in diesem Browser auf diesem Gerät gemerkt.']),
-        el('ol', {},
-          el('li', {}, el('b', {}, 'Vorher einschätzen: '), 'Gehe die Checkliste durch und schätze dich bei jeder Zeile ehrlich ein (Zeile „vorher“). Dort findest du auch, wo du im Notizbuch und im Buch nachlesen kannst.'),
-          el('li', {}, el('b', {}, 'Üben: '), 'Übe vor allem die Punkte, bei denen du unsicher bist – mit den Übungen auf dieser Seite und den Übungen auf Realmath. Die Aufgaben auf dieser Seite werden jedes Mal neu erzeugt, du kannst also beliebig oft üben.'),
-          el('li', {}, el('b', {}, 'Testen: '), 'Mache den Abschlusstest. Er zeigt dir, was du noch einmal üben solltest.'),
-          el('li', {}, el('b', {}, 'Nachher einschätzen und sichern: '), 'Schätze dich in der Checkliste noch einmal ein (Zeile „nachher“). Unter „Mein Lernstand“ siehst du dann alles auf einen Blick und kannst es als PDF in deinem Notizbuch ablegen.')),
+        mitEinschaetzung
+          ? el('ol', {},
+              el('li', {}, el('b', {}, 'Vorher einschätzen: '), 'Gehe die Checkliste durch und schätze dich bei jeder Zeile ehrlich ein (Zeile „vorher“). Dort findest du auch, wo du im Notizbuch und im Buch nachlesen kannst.'),
+              el('li', {}, el('b', {}, 'Üben: '), 'Übe vor allem die Punkte, bei denen du unsicher bist – mit den Übungen auf dieser Seite und den Übungen auf Realmath. Die Aufgaben auf dieser Seite werden jedes Mal neu erzeugt, du kannst also beliebig oft üben.'),
+              el('li', {}, el('b', {}, 'Testen: '), 'Mache den Abschlusstest. Er zeigt dir, was du noch einmal üben solltest.'),
+              el('li', {}, el('b', {}, 'Nachher einschätzen und sichern: '), 'Schätze dich in der Checkliste noch einmal ein (Zeile „nachher“). Unter „Mein Lernstand“ siehst du dann alles auf einen Blick und kannst es als PDF in deinem Notizbuch ablegen.'))
+          : el('ol', {},
+              el('li', {}, el('b', {}, 'Überblick: '), 'Die Liste „Was übe ich hier?“ zeigt dir, worum es in den Übungen geht. Von dort springst du direkt zur passenden Übung.'),
+              el('li', {}, el('b', {}, 'Üben: '), 'Übe passend zum Unterricht. Die Aufgaben werden jedes Mal neu erzeugt, du kannst also beliebig oft üben.'),
+              el('li', {}, el('b', {}, 'Testen: '), 'Mit dem Abschlusstest siehst du, was du schon sicher kannst und was du noch einmal üben solltest.'),
+              el('li', {}, el('b', {}, 'Sichern: '), 'Unter „Mein Lernstand“ siehst du, was du gelöst hast, und kannst es als PDF in deinem Notizbuch ablegen.')),
         el('p', { class: 'ampel-legende' }, 'Jede Übung gibt es in drei Schwierigkeitsstufen: ',
           ...STUFEN.flatMap(([n, , t], i) => [ampel(n), ` ${t}${i < 2 ? ',  ' : '.'}`]),
           ' Fang mit Grün an und steigere dich.'),
-        el('p', {}, '✏️ Bei vielen Aufgaben helfen Notizen und Nebenrechnungen: Schreib Zwischenschritte ins Heft oder auf dem iPad mit, skizziere z. B. eine Tabelle, ein Diagramm oder einen Graphen. Nimm dir dafür ruhig Zeit – so machst du es in der Klassenarbeit auch.')),
+        el('p', {}, `✏️ Bei vielen Aufgaben helfen Notizen und Nebenrechnungen: Schreib Zwischenschritte ins Heft oder auf dem iPad mit, skizziere z. B. eine Tabelle, ein Diagramm oder einen Graphen. Nimm dir dafür ruhig Zeit – so machst du es in der ${arbeit} auch.`)),
       checkliste(),
       ...thema.kompetenzen.map(kompetenzAbschnitt),
       testAbschnitt(),
@@ -105,23 +118,24 @@
     function checkliste() {
       const tabelle = el('table', { class: 'ck-tabelle' },
         el('thead', {}, el('tr', {},
-          el('th', {}, 'Das muss ich können'), el('th', {}, 'So schätze ich mich ein'),
-          el('th', {}, 'Hier finde ich Informationen'), el('th', {}, 'Hier kann ich üben'))));
+          el('th', {}, LISTE), mitEinschaetzung ? el('th', {}, 'So schätze ich mich ein') : null,
+          mitInfo ? el('th', {}, 'Hier finde ich Informationen') : null, el('th', {}, 'Hier kann ich üben'))));
       for (const k of thema.kompetenzen) {
         const gruppe = el('tbody', { class: 'ck-gruppe' + (k.zusatz ? ' zusatz' : '') });
         k.zeilen.forEach((zeile, z) => {
           const id = `${k.id}#${z}`;
-          const wahl = el('div', { class: 'einschaetzung' }, ...ZEITPUNKTE.map(([zp, label, lang]) => smileyZeile(id, zp, label, lang)));
-          const tr = el('tr', { style: `--zeile:${z}` },
-            el('td', { class: 'ck-text', html: zeile }),
-            el('td', { class: 'ck-smileys' }, wahl));
+          const tr = el('tr', { style: `--zeile:${z}` }, el('td', { class: 'ck-text', html: zeile }));
+          if (mitEinschaetzung) {
+            tr.append(el('td', { class: 'ck-smileys' }, el('div', { class: 'einschaetzung' }, ...ZEITPUNKTE.map(([zp, label, lang]) => smileyZeile(id, zp, label, lang)))));
+          }
           if (z === 0) {
             const n = k.zeilen.length;
-            tr.append(
+            if (mitInfo) tr.append(
               el('td', { class: 'ck-info', rowspan: n },
                 ...notizbuchLinks(k.notizbuch),
                 k.buch ? el('div', {}, '📘 Buch ' + k.buch) : null,
-                !k.notizbuch && !k.buch ? el('span', { class: 'leise' }, '–') : null),
+                !k.notizbuch && !k.buch ? el('span', { class: 'leise' }, '–') : null));
+            tr.append(
               el('td', { class: 'ck-ueben', rowspan: n },
                 el('div', { class: 'ueben-titel' }, 'Übungen auf dieser Seite:'),
                 el('ul', {}, ...k.uebungen.map((u) => el('li', {}, el('a', { href: '#' + uebungId(u), 'data-oeffnen': uebungId(u) }, u.titel)))),
@@ -141,8 +155,8 @@
         if (d && !d.open) { d.open = true; d.dispatchEvent(new Event('toggle')); }
       });
       return el('section', { class: 'kasten', id: 'checkliste' },
-        el('h2', {}, 'Checkliste: Das muss ich können'),
-        datenschutz(['Deine Einschätzung ist nur für dich. ', el('b', {}, 'Sie wird nicht übertragen, dein Lehrer sieht sie nicht.'), ' Sei also ruhig ehrlich zu dir selbst.']),
+        el('h2', {}, mitEinschaetzung ? 'Checkliste: Das muss ich können' : 'Was übe ich hier?'),
+        mitEinschaetzung ? datenschutz(['Deine Einschätzung ist nur für dich. ', el('b', {}, 'Sie wird nicht übertragen, dein Lehrer sieht sie nicht.'), ' Sei also ruhig ehrlich zu dir selbst.']) : null,
         el('div', { class: 'tabelle-scroll' }, tabelle),
         thema.kompetenzen.some((k) => k.zusatz) ? el('p', { class: 'leise klein' }, 'Grau hinterlegt: zusätzliche Übung, steht nicht auf dem Kompetenzbogen.') : null,
         thema.kurs ? el('p', { class: 'leise klein' }, `Die Notizbuch-Links führen in das Klassennotizbuch ${thema.kurs} und funktionieren nur, wenn du mit deinem Schulkonto angemeldet bist.`) : null);
@@ -210,7 +224,7 @@
       return el('section', { class: 'kasten test', id: 'abschlusstest' },
         el('h2', {}, 'Abschlusstest'),
         datenschutz(['Der Test wird nicht benotet. ', el('b', {}, 'Dein Ergebnis wird nicht übertragen, dein Lehrer sieht es nicht.'), ' Er zeigt nur dir, was du noch üben solltest.']),
-        el('p', {}, `Zu jedem Punkt der Checkliste bekommst du ${thema.test.anzahlProKompetenz === 1 ? 'eine Aufgabe' : thema.test.anzahlProKompetenz + ' Aufgaben'}. Die Aufgaben sind mittel (gelb) oder schwierig (rot). Bearbeite alle Aufgaben ohne Hilfe – Nebenrechnungen ins Heft oder auf das iPad – und klicke dann auf „Auswerten“. Danach siehst du, was du noch üben solltest. Jeder Test ist neu zusammengestellt.`),
+        el('p', {}, `Zu jedem Punkt ${mitEinschaetzung ? 'der Checkliste' : 'der Liste'} bekommst du ${thema.test.anzahlProKompetenz === 1 ? 'eine Aufgabe' : thema.test.anzahlProKompetenz + ' Aufgaben'}. Die Aufgaben sind mittel (gelb) oder schwierig (rot). Bearbeite alle Aufgaben ohne Hilfe – Nebenrechnungen ins Heft oder auf das iPad – und klicke dann auf „Auswerten“. Danach siehst du, was du noch üben solltest. Jeder Test ist neu zusammengestellt.`),
         start, flaeche);
 
       function baueTest() {
@@ -288,7 +302,7 @@
       function smiley(i) { return i == null ? el('span', { class: 'leise' }, '–') : el('span', { class: 'ls-smiley', title: SMILEYS[i][1] }, SMILEYS[i][0]); }
       function zeichne() {
         const tabelle = el('table', { class: 'ls-tabelle' },
-          el('thead', {}, el('tr', {}, el('th', {}, 'Das muss ich können'), el('th', {}, 'vorher'), el('th', {}, 'nachher'),
+          el('thead', {}, el('tr', {}, el('th', {}, LISTE), mitEinschaetzung ? el('th', {}, 'vorher') : null, mitEinschaetzung ? el('th', {}, 'nachher') : null,
             el('th', {}, 'Gelöste Übungen'), el('th', {}, 'Letzter Test'))));
         const letzter = s.daten.tests[s.daten.tests.length - 1];
         for (const k of thema.kompetenzen) {
@@ -297,7 +311,8 @@
           const test = letzter && letzter.pro[k.id];
           k.zeilen.forEach((zeile, z) => {
             const e = s.daten.selbst[`${k.id}#${z}`] || {};
-            const tr = el('tr', {}, el('td', { html: zeile }), el('td', { class: 'mitte' }, smiley(e.vorher)), el('td', { class: 'mitte' }, smiley(e.nachher)));
+            const tr = el('tr', {}, el('td', { html: zeile }));
+            if (mitEinschaetzung) tr.append(el('td', { class: 'mitte' }, smiley(e.vorher)), el('td', { class: 'mitte' }, smiley(e.nachher)));
             if (z === 0) {
               tr.append(
                 el('td', { rowspan: k.zeilen.length, class: 'ls-geloest' },
@@ -316,7 +331,7 @@
         inhalt.replaceChildren(
           el('p', { class: 'nur-druck ls-kopf' }, `${thema.fach} · ${thema.stufe} · ${thema.titel}${thema.kurs ? ' · ' + thema.kurs : ''}`, el('br'),
             'Name: ', el('b', {}, name.value || '______________________'), ` · Stand: ${heute()}`),
-          el('p', { class: 'leise klein' }, `Einschätzung vorher: ${datumV || 'noch nicht'} · nachher: ${datumN || 'noch nicht'}`),
+          ...(mitEinschaetzung ? [el('p', { class: 'leise klein' }, `Einschätzung vorher: ${datumV || 'noch nicht'} · nachher: ${datumN || 'noch nicht'}`)] : []),
           el('div', { class: 'tabelle-scroll' }, tabelle),
           el('h3', {}, 'Abschlusstests'),
           tests.length
@@ -331,7 +346,7 @@
       return el('section', { class: 'kasten', id: 'lernstand' },
         el('h2', {}, 'Mein Lernstand'),
         datenschutz(['Dein Lernstand ist nur in diesem Browser gespeichert. ', el('b', {}, 'Dein Lehrer sieht ihn nur, wenn du das PDF selbst in dein Notizbuch legst'), ' – dort kann er es wie alle deine Notizbuchseiten sehen.']),
-        el('p', { class: 'nicht-druck' }, 'Hier siehst du deine Einschätzung vorher und nachher, wie viele Übungen du gelöst hast und deine Abschlusstests. ',
+        el('p', { class: 'nicht-druck' }, mitEinschaetzung ? 'Hier siehst du deine Einschätzung vorher und nachher, wie viele Übungen du gelöst hast und deine Abschlusstests. ' : 'Hier siehst du, wie viele Übungen du gelöst hast, und deine Abschlusstests. ',
           el('b', {}, 'Sichere deinen Lernstand als PDF in deinem Notizbuch'), ' – im Browser gespeicherte Daten können verloren gehen (z. B. wenn du die Seite länger nicht besuchst oder ein anderes Gerät nutzt).'),
         el('details', { class: 'nicht-druck anleitung-pdf' }, el('summary', {}, 'So legst du das PDF in OneNote ab'),
           el('ol', {},

@@ -28,6 +28,7 @@ const ALLE = [
   'assets/js/generatoren/wahrscheinlichkeit.js',
   'assets/js/generatoren/quadratische-funktionen.js',
   'assets/js/generatoren/cas-befehle.js',
+  'assets/js/generatoren/binomialverteilung.js',
 ];
 
 /**

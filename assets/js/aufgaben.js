@@ -79,6 +79,7 @@
         }
         if (f.art === 'naeherung') {
           const r = UM.pruefeNaeherung(input.value, f.wert, f);
+          if (r.grund === 'stellen' && (f.stellen ?? 2) !== 2) return zeige(false, `Fast – runde auf mindestens ${f.stellen} Nachkommastellen${f.prozent ? ` (in Prozent: ${f.stellen - 2})` : ''}.`);
           return zeige(r.ok, r.ok ? '' : MELDUNG[r.grund === 'unlesbar' ? 'naeherungUnlesbar' : r.grund]);
         }
         const r = UM.pruefeZahl(input.value, f.antwort, { gekuerzt: f.gekuerzt });
