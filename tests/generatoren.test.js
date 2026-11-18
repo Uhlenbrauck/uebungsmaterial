@@ -198,6 +198,52 @@ test('CAS: binomPdf mit typischen Fehlern', () => {
   nein('binomPdf(10,0.2,4)', 'Inhalt');
 });
 
+test('CAS: binomCdf mit Grenzen', () => {
+  const s = { art: 'binomcdf', n: 100, p: 0.3, a: 31, b: 100 };
+  const ok = (e, soll = s) => assert.ok(UM.pruefeCas(e, soll).ok, e);
+  const nein = (e, teil, soll = s) => { const r = UM.pruefeCas(e, soll); assert.ok(!r.ok, e); assert.ok(r.meldung.includes(teil), `${e}: ${r.meldung}`); };
+  ok('binomCdf(100,0.3,31,100)');
+  ok('binomcdf(100, .3, 31, 1000)');
+  ok('binomCdf(100,0.3,37)', { art: 'binomcdf', n: 100, p: 0.3, a: 0, b: 37 });
+  ok('binomCdf(100,0.3,0,37)', { art: 'binomcdf', n: 100, p: 0.3, a: 0, b: 37 });
+  nein('binomCdf(100,0.3,30,100)', 'Grenzen');
+  nein('binomCdf(100,0.3,100,31)', 'untere Grenze kommt zuerst');
+  nein('binomCdf(0.3,100,31,100)', 'Reihenfolge');
+  nein('binomCdf(100,0.3,31)', 'drei Angaben');
+  nein('binomPdf(100,0.3,31)', 'anderer Befehl');
+  nein('binomCdf(100,0,3,31,100)', 'Dezimalpunkt');
+});
+
+test('Kumulierte Binomialverteilung: Ereignisse, Grenzen und Werte passen', () => {
+  const { cdf, pdf } = UM.binomial;
+  assert.ok(Math.abs(cdf(10, 0.25, 5, 10) - 0.0781269073) < 1e-9);
+  for (let i = 0; i < 1500; i++) {
+    const a = UM.generatoren['bv-cdf'](2 + (i % 2));
+    const c = a.felder.find((f) => f.art === 'cas');
+    const w = a.felder.find((f) => f.art === 'naeherung');
+    const { n, p, a: lo, b: hi } = c.soll;
+    assert.ok(lo >= 0 && hi <= n && lo <= hi);
+    assert.ok(Math.abs(cdf(n, p, lo, hi) - w.wert) < 1e-12);
+    assert.ok(Math.abs(Number(c.ausgabe) - w.wert) < 1e-5);
+  }
+  // Mindestanzahl: kleinstes c mit P(X ≤ c) ≥ q
+  for (let i = 0; i < 300; i++) {
+    const a = UM.generatoren['bv-kum-kontext'](3);
+    const c = a.felder.find((f) => f.art === 'zahl').antwort.zahl();
+    const m = /\$n=(\d+)\$, \$p=([\d{},]+)\$/.exec(a.loesung[0]);
+    const n = Number(m[1]), p = Number(m[2].replace('{,}', '.'));
+    const q = Number(/mindestens (\d+) %/.exec(a.frage)[1]) / 100;
+    assert.ok(cdf(n, p, 0, c) >= q && cdf(n, p, 0, c - 1) < q, a.frage);
+  }
+  // Gegenereignis: Summe 1
+  for (let i = 0; i < 300; i++) {
+    const a = UM.generatoren['bv-gegen'](1 + (i % 3));
+    const w = a.felder.find((f) => f.art === 'naeherung').wert;
+    assert.ok(w > 0.005 && w < 0.995);
+    assert.ok(pdf(5, 0.5, 2) > 0);
+  }
+});
+
 test('Binomialverteilung: Rechnung stimmt', () => {
   const { bk, pdf, pdfExakt } = UM.binomial;
   assert.strictEqual(bk(10, 3), 120);

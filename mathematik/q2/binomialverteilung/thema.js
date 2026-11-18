@@ -1,5 +1,5 @@
 /*
- * Thema: Binomialverteilung und Formel von Bernoulli (Q2 GK) – Übungen zum laufenden Unterricht
+ * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung (Q2 GK) – Übungen zum laufenden Unterricht
  *
  * Aufbau wie mathematik/klasse-10/…/thema.js, aber ohne Selbsteinschätzung (einschaetzung: false):
  * Die Zeilen erscheinen als „Was übe ich hier?“ und können später in die Checkliste zur Klausur übernommen werden.
@@ -11,8 +11,8 @@
     "id": "mathematik-q2-binomialverteilung",
     "fach": "Mathematik",
     "stufe": "Q2 (Grundkurs)",
-    "titel": "Binomialverteilung und Formel von Bernoulli",
-    "untertitel": "Übungen zum Unterricht",
+    "titel": "Binomialverteilung",
+    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme und kumulierte Binomialverteilung",
     "einschaetzung": false,
     "arbeit": "Klausur",
     "test": {
@@ -74,6 +74,42 @@
         ],
         "uebungen": [
           { "gen": "bv-kontext", "titel": "Sachaufgaben, vermischt" }
+        ]
+      },
+      {
+        "id": "grenzen",
+        "zeilen": [
+          "Ich kann Ereignisse wie „höchstens“, „mindestens“, „mehr als“, „weniger als“ und „zwischen“ als $P(a\\le X\\le b)$ schreiben und dabei die Grenzen richtig setzen – auch im Histogramm."
+        ],
+        "uebungen": [
+          { "gen": "bv-grenzen", "titel": "Grenzen setzen: P(a ≤ X ≤ b)" }
+        ]
+      },
+      {
+        "id": "binomcdf",
+        "zeilen": [
+          "Ich kann kumulierte Wahrscheinlichkeiten mit der CAS-App berechnen: binomCdf(n,p,untere Grenze,obere Grenze)."
+        ],
+        "uebungen": [
+          { "gen": "bv-cdf", "titel": "binomCdf in der CAS-App" }
+        ]
+      },
+      {
+        "id": "gegenereignis",
+        "zeilen": [
+          "Ich kann zu einem Ereignis das Gegenereignis angeben und seine Wahrscheinlichkeit bestimmen."
+        ],
+        "uebungen": [
+          { "gen": "bv-gegen", "titel": "Gegenereignisse" }
+        ]
+      },
+      {
+        "id": "kumuliert-sachaufgaben",
+        "zeilen": [
+          "Ich kann Sachaufgaben zur kumulierten Binomialverteilung lösen, auch wenn eine Anzahl gesucht ist, die mit einer vorgegebenen Wahrscheinlichkeit ausreicht."
+        ],
+        "uebungen": [
+          { "gen": "bv-kum-kontext", "titel": "Sachaufgaben zur kumulierten Binomialverteilung" }
         ]
       }
     ]

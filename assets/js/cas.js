@@ -9,6 +9,7 @@
  *     { art:'completesquare', ausdruck, f? }         completeSquare(ausdruck,x)
  *     { art:'factor', ausdruck, f? }                 factor(ausdruck) oder factor(ausdruck,x)
  *     { art:'binompdf', n, p, k }                    binomPdf(n,p,k) – Angaben dürfen Terme sein (1/6); vertauschte Angaben werden erkannt
+ *     { art:'binomcdf', n, p, a, b }                 binomCdf(n,p,a,b) = P(a ≤ X ≤ b); bei a = 0 auch binomCdf(n,p,b)
  *   Ausdrücke in CAS-Schreibweise (Dezimalpunkt, *, ^). f = Term von f(x), falls f(x) in der Eingabe vorkommt.
  *
  * Gleichwertigkeit wird numerisch an mehreren Stellen geprüft (Terme in x).
@@ -196,6 +197,11 @@
     binomAnzahl: 'binomPdf braucht genau drei Angaben: binomPdf(n,p,k).',
     binomReihenfolge: 'Die Zahlen stimmen, aber die Reihenfolge nicht: zuerst n, dann p, dann k – binomPdf(n,p,k).',
     binomP: 'Die zweite Angabe ist die Trefferwahrscheinlichkeit p – eine Zahl zwischen 0 und 1.',
+    cdfAnzahl: 'binomCdf braucht n, p und die Grenzen: binomCdf(n,p,untere Grenze,obere Grenze).',
+    cdfReihenfolge: 'Prüfe die Reihenfolge: binomCdf(n,p,untere Grenze,obere Grenze) – zuerst n, dann p.',
+    cdfGrenzenTausch: 'Die untere Grenze kommt zuerst: binomCdf(n,p,untere Grenze,obere Grenze).',
+    cdfGrenze: 'Fast – prüfe die Grenzen. Gehört die Grenze selbst noch dazu? „mehr als 30“ beginnt z. B. erst bei 31.',
+    cdfDrei: 'Mit drei Angaben berechnet binomCdf(n,p,k) nur P(X ≤ k). Hier brauchst du auch eine untere Grenze: binomCdf(n,p,untere Grenze,obere Grenze).',
   };
 
   /** Hat die Eingabe Dezimalkommas (Ziffer,Ziffer), die zu viele Argumente erzeugen? */
@@ -234,6 +240,28 @@
     if (!BEFEHLE[name]) return { ok: false, meldung: name === 'f' ? M.befehl('f(…)') : M.unlesbar };
     if (name !== soll.art) return { ok: false, meldung: M.befehl(BEFEHLE[name]) };
     const args = argumente(m[2]);
+
+    if (soll.art === 'binomcdf') {
+      if (args.length !== 3 && args.length !== 4) return { ok: false, meldung: args.length > 4 && hatDezimalKomma(m[2]) ? M.komma : M.cdfAnzahl };
+      const w = args.map((a) => uebersetze(a));
+      if (w.some((f) => !f)) return { ok: false, meldung: M.unlesbar };
+      const v = w.map((f) => f({ x: NaN }));
+      const [nn, pp] = v;
+      let [lo, hi] = v.length === 4 ? [v[2], v[3]] : [0, v[2]];
+      if (!nah(nn, soll.n) || !nah(pp, soll.p)) {
+        if (nah(nn, soll.p) && nah(pp, soll.n)) return { ok: false, meldung: M.cdfReihenfolge };
+        if (!(pp >= 0 && pp <= 1)) return { ok: false, meldung: v.slice(2).some((x) => nah(x, soll.p)) ? M.cdfReihenfolge : M.binomP };
+        return { ok: false, meldung: M.inhalt };
+      }
+      // Grenzen außerhalb von 0 … n sind gleichwertig zu 0 bzw. n
+      const klemm = (x) => Math.min(Math.max(x, 0), soll.n);
+      const gleich = (x, y) => nah(klemm(x), klemm(y));
+      if (gleich(lo, soll.a) && gleich(hi, soll.b)) return { ok: true };
+      if (v.length === 3 && soll.a > 0) return { ok: false, meldung: M.cdfDrei };
+      if (gleich(lo, soll.b) && gleich(hi, soll.a) && soll.a !== soll.b) return { ok: false, meldung: M.cdfGrenzenTausch };
+      if ((gleich(hi, soll.b) && Math.abs(lo - soll.a) === 1) || (gleich(lo, soll.a) && Math.abs(hi - soll.b) === 1)) return { ok: false, meldung: M.cdfGrenze };
+      return { ok: false, meldung: M.inhalt };
+    }
 
     if (soll.art === 'binompdf') {
       if (args.length !== 3) return { ok: false, meldung: args.length > 3 && hatDezimalKomma(m[2]) ? M.komma : M.binomAnzahl };

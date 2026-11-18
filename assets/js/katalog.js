@@ -35,8 +35,8 @@
           titel: 'Q2 (Grundkurs)',
           themen: [
             {
-              titel: 'Binomialverteilung und Formel von Bernoulli',
-              text: 'Übungen zum Unterricht: Bernoulli-Kette erkennen, Schreibweise P(X = k), Formel von Bernoulli ohne CAS, binomPdf in der CAS-App und Sachaufgaben.',
+              titel: 'Binomialverteilung',
+              text: 'Übungen zum Unterricht: Bernoulli-Kette, Schreibweise P(X = k), Histogramme, Formel von Bernoulli, binomPdf und binomCdf, Gegenereignis und Sachaufgaben.',
               pfad: 'mathematik/q2/binomialverteilung/index.html',
               status: 'neu',
             },

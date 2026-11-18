@@ -502,13 +502,20 @@
     const W = klein ? 300 : 560, H = klein ? 190 : 270;
     const m = klein ? { l: 38, r: 8, t: 14, b: 26 } : { l: 52, r: 14, t: opt.werte ? 26 : 16, b: 40 };
     const n = werte.length - 1;
-    const kMax = Math.max(opt.kMax ?? n, n);
+    // opt.zuschneiden: nur den Bereich zeigen, in dem die Balken sichtbar sind (große n)
+    let von = 0;
+    let kMax = Math.max(opt.kMax ?? n, n);
+    if (opt.zuschneiden) {
+      const sichtbar = werte.map((w, k) => (w >= 0.0005 || (opt.markiert && opt.markiert.has(k) && w >= 0.00005) ? k : -1)).filter((k) => k >= 0);
+      von = Math.max(0, Math.min(...sichtbar) - 1);
+      kMax = Math.min(n, Math.max(...sichtbar) + 1);
+    }
     const datenMax = Math.max(...werte);
     const yS = schritt(opt.yMax ?? datenMax, klein ? 3 : 5);
     const yMax = opt.yMax ?? Math.ceil(datenMax / yS - 1e-9) * yS;
     const pw = W - m.l - m.r, ph = H - m.t - m.b;
-    const slot = pw / (kMax + 1), bw = slot * (kMax > 25 ? 0.86 : 0.78);
-    const X = (k) => m.l + slot * (k + 0.5), Y = (v) => m.t + ph * (1 - Math.min(v, yMax) / yMax);
+    const slot = pw / (kMax - von + 1), bw = slot * (kMax - von > 25 ? 0.86 : 0.78);
+    const X = (k) => m.l + slot * (k - von + 0.5), Y = (v) => m.t + ph * (1 - Math.min(v, yMax) / yMax);
     const yDez = (String(+yS.toPrecision(6)).split('.')[1] || '').length;
     let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Histogramm"${klein ? ' class="hist-klein"' : ''}>`;
     for (let i = 0; i * yS <= yMax + 1e-9; i++) {
@@ -516,7 +523,7 @@
       if (i > 0) s += `<line x1="${m.l}" x2="${m.l + pw}" y1="${y}" y2="${y}" class="ks-gitter"/>`;
       s += `<text x="${m.l - 6}" y="${y + 4}" class="ks-zahl ks-links">${i === 0 ? '0' : komma(i * yS, yDez)}</text>`;
     }
-    for (let k = 0; k <= n; k++) {
+    for (let k = von; k <= Math.min(n, kMax); k++) {
       const y = Y(werte[k]);
       s += `<rect x="${X(k) - bw / 2}" y="${y}" width="${bw}" height="${m.t + ph - y}" class="hg-balken${opt.markiert && opt.markiert.has(k) ? ' hg-markiert' : ''}"/>`;
       if (opt.werte) s += `<text x="${X(k)}" y="${y - 5}" class="ks-zahl">${komma(werte[k], 2)}</text>`;
@@ -525,7 +532,7 @@
     s += `<line x1="${m.l}" x2="${m.l}" y1="${m.t + ph}" y2="${m.t - 6}" class="ks-achse"/>`;
     let ks = 1;
     for (const t of [1, 2, 5, 10]) { ks = t; if (slot * t >= (klein ? 18 : 24)) break; }
-    for (let k = 0; k <= kMax; k += ks) s += `<text x="${X(k)}" y="${m.t + ph + 15}" class="ks-zahl">${k}</text>`;
+    for (let k = Math.ceil(von / ks) * ks; k <= kMax; k += ks) s += `<text x="${X(k)}" y="${m.t + ph + 15}" class="ks-zahl">${k}</text>`;
     if (!klein) s += `<text x="${m.l + pw}" y="${H - 4}" class="ks-text" text-anchor="end">k</text>`;
     if (opt.titel) s += `<text x="${m.l + 8}" y="${m.t + 14}" class="hg-titel">${opt.titel}</text>`;
     return s + '</svg>';
@@ -665,5 +672,358 @@
     };
   };
 
-  UM.binomial = { bk, pdf, pdfExakt, KONTEXTE, histSvg };
+
+  // =====================================================================
+  // Kumulierte Binomialverteilung (AB 38/39): Grenzen, binomCdf, Gegenereignis, Sachaufgaben
+  // =====================================================================
+  /** P(a ≤ X ≤ b) */
+  function cdf(n, p, a, b) {
+    let s = 0;
+    for (let k = Math.max(0, a); k <= Math.min(n, b); k++) s += pdf(n, p, k);
+    return s;
+  }
+  const pl = (k, s, p) => (k === 1 ? `1 ${s}` : `${k} ${p}`);
+  /*
+   * Sachzusammenhänge mit größerem n.
+   * anz(k): Treffer, ohne(k): Nieten (für Ereignisse, die die Nieten zählen)
+   */
+  const KUM = [
+    {
+      id: 'haustier', p: ['0,4', '0,45', '0,35'].map(Bruch.dez), n: [50, 80, 100],
+      satz: (n, pB) => `In etwa ${pProzent(pB)} der Haushalte lebt ein Haustier. Für eine Umfrage werden ${n} Haushalte zufällig ausgewählt.`,
+      X: 'die Anzahl der ausgewählten Haushalte mit Haustier',
+      anz: (k) => pl(k, 'Haushalt mit Haustier', 'Haushalte mit Haustier'), ohne: (k) => pl(k, 'Haushalt ohne Haustier', 'Haushalte ohne Haustier'),
+    },
+    {
+      id: 'mc', p: [new Bruch(1, 4), new Bruch(1, 5)], n: [30, 40, 60],
+      satz: (n, pB) => `Ein Multiple-Choice-Test besteht aus ${n} Aufgaben mit je ${pB.n} Antwortmöglichkeiten, von denen genau eine richtig ist. Tom rät bei allen Aufgaben.`,
+      X: 'die Anzahl der richtigen Antworten',
+      anz: (k) => pl(k, 'richtige Antwort', 'richtige Antworten'), ohne: (k) => pl(k, 'falsche Antwort', 'falsche Antworten'),
+    },
+    {
+      id: 'samen', p: ['0,8', '0,85', '0,9'].map(Bruch.dez), n: [50, 80, 100],
+      satz: (n, pB) => `Von einer Sorte Blumensamen keimen ${pProzent(pB)}. Es werden ${n} Samen ausgesät.`,
+      X: 'die Anzahl der gekeimten Samen',
+      anz: (k) => pl(k, 'gekeimter Samen', 'gekeimte Samen'), ohne: (k) => `${k} Samen, die nicht keimen`,
+    },
+    {
+      id: 'schrauben', p: ['0,04', '0,05', '0,08'].map(Bruch.dez), n: [100, 150, 200],
+      satz: (n, pB) => `Bei einer Maschine sind ${pProzent(pB)} der hergestellten Schrauben fehlerhaft. Es werden ${n} Schrauben zufällig entnommen.`,
+      X: 'die Anzahl der fehlerhaften Schrauben',
+      anz: (k) => pl(k, 'fehlerhafte Schraube', 'fehlerhafte Schrauben'), ohne: (k) => pl(k, 'fehlerfreie Schraube', 'fehlerfreie Schrauben'),
+    },
+    {
+      id: 'freiwurf', p: ['0,7', '0,75', '0,8'].map(Bruch.dez), n: [20, 30, 40],
+      satz: (n, pB) => `Eine Basketballspielerin trifft beim Freiwurf mit einer Wahrscheinlichkeit von ${pProzent(pB)}. Sie wirft ${n} Freiwürfe.`,
+      X: 'die Anzahl der Treffer',
+      anz: (k) => pl(k, 'Treffer', 'Treffer'), ohne: (k) => pl(k, 'Fehlwurf', 'Fehlwürfe'),
+    },
+    {
+      id: 'zug', p: ['0,85', '0,9', '0,8'].map(Bruch.dez), n: [30, 40, 60],
+      satz: (n, pB) => `Ein Pendlerzug ist erfahrungsgemäß mit einer Wahrscheinlichkeit von ${pProzent(pB)} pünktlich. Betrachtet werden ${n} Fahrten.`,
+      X: 'die Anzahl der pünktlichen Fahrten',
+      anz: (k) => pl(k, 'pünktliche Fahrt', 'pünktliche Fahrten'), ohne: (k) => pl(k, 'unpünktliche Fahrt', 'unpünktliche Fahrten'),
+    },
+  ];
+  function kumKontext() {
+    const K = R.wahl(KUM);
+    const pB = R.wahl(K.p);
+    return { K, n: R.wahl(K.n), pB, p: pB.zahl() };
+  }
+  const kumEinleitung = (c) => `${c.K.satz(c.n, c.pB)} Die Zufallsgröße $X$ gibt ${c.K.X} an.`;
+
+  /** Zahl in der Nähe des Erwartungswerts: µ + d·σ */
+  function nahe(n, p, d) {
+    const mu = n * p, sd = Math.sqrt(n * p * (1 - p));
+    return Math.min(n - 1, Math.max(1, Math.round(mu + d * sd)));
+  }
+  /*
+   * Ereignis mit Grenzen [a, b] und Text.
+   * arten: 'genau', 'hoechstens', 'mindestens', 'mehrAls', 'wenigerAls', 'zwischenOffen', 'zwischen'
+   */
+  function ereignis(art, n, p, anz) {
+    for (let v = 0; v < 60; v++) {
+      const m = nahe(n, p, R.wahl([-1.4, -1, -0.6, -0.3, 0.3, 0.6, 1, 1.4]));
+      let a, b, text;
+      if (art === 'genau') { a = b = m; text = `genau ${anz(m)}`; }
+      else if (art === 'hoechstens') { a = 0; b = m; text = `höchstens ${anz(m)}`; }
+      else if (art === 'mindestens') { a = m; b = n; text = `mindestens ${anz(m)}`; }
+      else if (art === 'mehrAls') { a = m + 1; b = n; text = `mehr als ${anz(m)}`; }
+      else if (art === 'wenigerAls') { a = 0; b = m - 1; text = `weniger als ${anz(m)}`; }
+      else {
+        const lo = nahe(n, p, R.wahl([-1.5, -1, -0.7])), hi = nahe(n, p, R.wahl([0.5, 1, 1.5]));
+        if (hi - lo < 3) continue;
+        if (art === 'zwischenOffen') { a = lo + 1; b = hi - 1; text = `mehr als ${lo}, aber weniger als ${anz(hi)}`; }
+        else { a = lo; b = hi; text = `mindestens ${lo} und höchstens ${anz(hi)}`; }
+      }
+      if (a > b || a < 0 || b > n) continue;
+      const w = cdf(n, p, a, b);
+      if (w >= 0.01 && w <= 0.99) return { art, a, b, text, w, m };
+    }
+    return null;
+  }
+  /** P(a ≤ X ≤ b) als TeX, mit Kurzform für a = 0, b = n, a = b */
+  function pTexAB(a, b, n) {
+    if (a === b) return `P(X=${a})`;
+    if (a === 0) return `P(X\\le ${b})`;
+    if (b === n) return `P(X\\ge ${a})`;
+    return `P(${a}\\le X\\le ${b})`;
+  }
+  const cdfCode = (n, pB, a, b) => `binomCdf(${n},${casP(pB)},${a},${b})`;
+  const GRENZEN_TIPP = '„höchstens 5“: 0 bis 5. „mindestens 5“: 5 bis $n$. „mehr als 5“: ab 6. „weniger als 5“: bis 4.';
+
+  // ---------- Grenzen setzen: P(a ≤ X ≤ b) ----------
+  gen['bv-grenzen'] = (stufe) => {
+    if (stufe === 2 && Math.random() < 0.5) {
+      // markierte Balken im Histogramm
+      const c = kontext({ nMin: 8, nMax: 15 });
+      const { K, n, p } = c;
+      const werte = Array.from({ length: n + 1 }, (_, k) => pdf(n, p, k));
+      const typ = R.int(0, 2);
+      const m = R.int(2, n - 2);
+      let a, b, richtig, falsch;
+      if (typ === 0) { a = 0; b = m; richtig = `höchstens ${K.anz(m)}`; falsch = [`weniger als ${K.anz(m)}`, `mindestens ${K.anz(m)}`, `mehr als ${K.anz(m)}`]; }
+      else if (typ === 1) { a = m; b = n; richtig = `mindestens ${K.anz(m)}`; falsch = [`mehr als ${K.anz(m)}`, `höchstens ${K.anz(m)}`, `weniger als ${K.anz(m)}`]; }
+      else {
+        a = R.int(1, Math.max(1, n - 5)); b = Math.min(n - 1, a + R.int(2, 4));
+        richtig = `mindestens ${a} und höchstens ${K.anz(b)}`;
+        falsch = [`mehr als ${a} und weniger als ${K.anz(b)}`, `mehr als ${a} und höchstens ${K.anz(b)}`, `mindestens ${a} und weniger als ${K.anz(b)}`];
+      }
+      const markiert = new Set(Array.from({ length: b - a + 1 }, (_, i) => a + i));
+      return {
+        frage: `${einleitung(c)} Die markierten Balken gehören zu einem Ereignis.`,
+        bild: histSvg(werte, { markiert }),
+        felder: [
+          { art: 'zahl', label: 'untere Grenze $a$', antwort: new Bruch(a) },
+          { art: 'zahl', label: 'obere Grenze $b$', antwort: new Bruch(b) },
+          auswahl('Das Ereignis heißt', richtig, falsch),
+        ],
+        term: 'P(\\boxed{a}\\le X\\le \\boxed{b})',
+        hinweis: 'Lies ab, bei welchem $k$ die markierten Balken beginnen und enden. Beide Grenzen gehören dazu.',
+        loesung: [`Markiert sind die Balken von $k=${a}$ bis $k=${b}$: $P(${a}\\le X\\le ${b})$, in Worten „${richtig}“.`],
+      };
+    }
+    const c = kumKontext();
+    const { K, n, p } = c;
+    const art = stufe === 1 ? R.wahl(['hoechstens', 'mindestens'])
+      : stufe === 2 ? R.wahl(['mehrAls', 'wenigerAls', 'mehrAls', 'wenigerAls', 'hoechstens', 'mindestens'])
+        : R.wahl(['zwischenOffen', 'zwischen', 'ohne']);
+    if (art === 'ohne') {
+      // Ereignis über die Nieten – X zählt aber die Treffer
+      const typ = R.wahl(['hoechstens', 'mindestens', 'mehrAls']);
+      const e = ereignis(typ, n, 1 - p, K.ohne);
+      if (!e) return gen['bv-grenzen'](stufe);
+      const a = n - e.b, b = n - e.a;
+      const markiert = new Set(Array.from({ length: b - a + 1 }, (_, i) => a + i));
+      return {
+        frage: `${kumEinleitung(c)} Schreibe die Wahrscheinlichkeit des Ereignisses „${e.text}“ in der Form $P(a\\le X\\le b)$.`,
+        term: 'P(\\boxed{a}\\le X\\le \\boxed{b})',
+        felder: [
+          { art: 'zahl', label: 'untere Grenze $a$', antwort: new Bruch(a) },
+          { art: 'zahl', label: 'obere Grenze $b$', antwort: new Bruch(b) },
+        ],
+        hinweis: `Achtung: $X$ zählt ${K.X.replace(/^die /, 'die ')}, das Ereignis spricht aber von den anderen. Bei ${n} insgesamt gilt: ${K.ohne(e.m)} bedeutet ${K.anz(n - e.m)}.`,
+        loesung: [
+          `„${e.text}“ zählt das Gegenteil von dem, was $X$ zählt: ${e.a} bis ${e.b}. Weil es insgesamt ${n} sind, nimmt $X$ dann die Werte ${n}−${e.b}=${a} bis ${n}−${e.a}=${b} an.`,
+          `$P(${a}\\le X\\le ${b})=${pTexAB(a, b, n)}$`,
+          { svg: histSvg(Array.from({ length: n + 1 }, (_, k) => pdf(n, p, k)), { markiert, zuschneiden: true }) },
+        ],
+      };
+    }
+    const e = ereignis(art, n, p, K.anz);
+    if (!e) return gen['bv-grenzen'](stufe);
+    const markiert = new Set(Array.from({ length: e.b - e.a + 1 }, (_, i) => e.a + i));
+    return {
+      frage: `${kumEinleitung(c)} Schreibe die Wahrscheinlichkeit des Ereignisses „${e.text}“ in der Form $P(a\\le X\\le b)$.`,
+      term: 'P(\\boxed{a}\\le X\\le \\boxed{b})',
+      felder: [
+        { art: 'zahl', label: 'untere Grenze $a$', antwort: new Bruch(e.a) },
+        { art: 'zahl', label: 'obere Grenze $b$', antwort: new Bruch(e.b) },
+      ],
+      hinweis: `Überlege, welche Werte von $X$ dazugehören. ${GRENZEN_TIPP}`,
+      loesung: [
+        `„${e.text}“: $X$ nimmt einen der Werte ${e.a}, ${e.a + 1}, …, ${e.b} an, also $P(${e.a}\\le X\\le ${e.b})${a0bn(e.a, e.b, n)}$.`,
+        { svg: histSvg(Array.from({ length: n + 1 }, (_, k) => pdf(n, p, k)), { markiert, zuschneiden: true }) },
+      ],
+    };
+  };
+  const a0bn = (a, b, n) => (a === 0 || b === n ? `=${pTexAB(a, b, n)}` : '');
+
+  // ---------- binomCdf in der CAS-App ----------
+  gen['bv-cdf'] = (stufe) => {
+    const c = kumKontext();
+    const { K, n, pB, p } = c;
+    const art = stufe === 1 ? R.wahl(['mehrAls', 'wenigerAls', 'mindestens', 'hoechstens'])
+      : stufe === 2 ? R.wahl(['mehrAls', 'wenigerAls', 'mindestens', 'hoechstens', 'zwischen'])
+        : R.wahl(['zwischenOffen', 'zwischen', 'ohne', 'ohne']);
+    let e, a, b;
+    if (art === 'ohne') {
+      e = ereignis(R.wahl(['hoechstens', 'mehrAls', 'mindestens']), n, 1 - p, K.ohne);
+      if (!e) return gen['bv-cdf'](stufe);
+      a = n - e.b; b = n - e.a;
+    } else {
+      e = ereignis(art, n, p, K.anz);
+      if (!e) return gen['bv-cdf'](stufe);
+      ({ a, b } = e);
+    }
+    const w = cdf(n, p, a, b);
+    const ein = cdfCode(n, pB, a, b);
+    if (stufe === 1) {
+      const falsch = [];
+      const kand = [cdfCode(n, pB, a === 0 ? a : a - 1, b), cdfCode(n, pB, a, b === n ? b : b + 1), cdfCode(n, pB, a + 1 <= b ? a + 1 : a, b), `binomPdf(${n},${casP(pB)},${e.m})`, cdfCode(n, pB, b, a)];
+      for (const k of kand) if (k !== ein && !falsch.includes(k) && falsch.length < 3) falsch.push(k);
+      return {
+        frage: `${kumEinleitung(c)} Mit welcher Eingabe berechnest du die Wahrscheinlichkeit des Ereignisses „${e.text}“?`,
+        felder: [auswahl('Eingabe', code(ein), falsch.map(code))],
+        hinweis: `${code('binomCdf(n,p,untere Grenze,obere Grenze)')} berechnet $P(a\\le X\\le b)$ – beide Grenzen gehören dazu. ${GRENZEN_TIPP}`,
+        loesung: [`„${e.text}“ heißt $${pTexAB(a, b, n)}$: ${code(ein)} $\\approx ${dzTex(w)}$.`],
+      };
+    }
+    const casFeld = { art: 'cas', label: 'Eingabe', soll: { art: 'binomcdf', n, p, a, b }, loesung: ein, ausgabe: casZahl(w), platzhalter: 'binomCdf(…)' };
+    return {
+      frage: `${kumEinleitung(c)} Berechne die Wahrscheinlichkeit des Ereignisses „${e.text}“ mit der CAS-App. ${RUNDEN}`,
+      felder: [casFeld, wFeld(`$${pTexAB(a, b, n)}$`.replace(/^\$P/, '$P'), w)].map((f, i) => (i === 1 ? { ...f, label: 'Wahrscheinlichkeit' } : f)),
+      hinweis: `Bestimme zuerst die Grenzen: Welche Werte von $X$ gehören dazu? Dann ${code('binomCdf(n,p,untere Grenze,obere Grenze)')}.${art === 'ohne' ? ' Achtung: $X$ zählt die anderen – rechne die Anzahl um.' : ''}`,
+      loesung: [
+        ...(art === 'ohne' ? [`„${e.text}“ bedeutet für $X$: von ${n}−${e.b}=${a} bis ${n}−${e.a}=${b}.`] : []),
+        `$${pTexAB(a, b, n)}$: ${code(ein)} ergibt ${casZahl(w)}, also etwa $${dzTex(w)}$.`,
+      ],
+    };
+  };
+
+  // ---------- Gegenereignis ----------
+  const WUERFEL = [
+    { text: 'Augenzahl 2', p: new Bruch(1, 6) },
+    { text: 'Augenzahl 5 oder 6', p: new Bruch(1, 3) },
+    { text: 'eine Augenzahl kleiner als 5', p: new Bruch(2, 3) },
+    { text: 'eine Augenzahl größer als 1', p: new Bruch(5, 6) },
+    { text: 'Augenzahl 2 oder 3', p: new Bruch(1, 3) },
+    { text: 'keine Sechs', p: new Bruch(5, 6) },
+    { text: 'eine gerade Augenzahl', p: new Bruch(1, 2) },
+    { text: 'eine Eins', p: new Bruch(1, 6) },
+  ];
+  gen['bv-gegen'] = (stufe) => {
+    let einl, n, pB, anzW;
+    if (stufe === 2 || Math.random() < 0.6) {
+      const ev = R.wahl(WUERFEL);
+      n = R.wahl([15, 20, 25, 30]); pB = ev.p;
+      anzW = (k) => `${k}-mal ${ev.text}`;
+      einl = `Ein Würfel wird ${n}-mal geworfen. Die Zufallsgröße $X$ gibt an, wie oft dabei ${ev.text.replace(/^Augenzahl/, 'die Augenzahl')} fällt.`;
+      if (ev.text === 'keine Sechs') einl = `Ein Würfel wird ${n}-mal geworfen. Die Zufallsgröße $X$ gibt an, bei wie vielen Würfen keine Sechs fällt.`;
+    } else {
+      const c = kumKontext();
+      n = c.n; pB = c.pB; anzW = c.K.anz; einl = kumEinleitung(c);
+    }
+    const p = pB.zahl();
+    let e, gegen, falsch, ga, gb, ga2, gb2;
+    if (stufe < 3) {
+      const art = R.wahl(['mehrAls', 'mindestens', 'hoechstens', 'wenigerAls']);
+      e = ereignis(art, n, p, anzW);
+      if (!e) return gen['bv-gegen'](stufe);
+      const m = e.m;
+      const T = { mehrAls: `mehr als ${anzW(m)}`, mindestens: `mindestens ${anzW(m)}`, hoechstens: `höchstens ${anzW(m)}`, wenigerAls: `weniger als ${anzW(m)}` };
+      const G = { mehrAls: 'hoechstens', mindestens: 'wenigerAls', hoechstens: 'mehrAls', wenigerAls: 'mindestens' };
+      gegen = T[G[art]];
+      falsch = Object.keys(T).filter((k) => k !== G[art] && k !== art).map((k) => T[k]);
+      falsch.push(T[art].replace(String(m), String(art === 'mehrAls' || art === 'hoechstens' ? m - 1 : m + 1)).replace(/^(mehr als|mindestens|höchstens|weniger als)/, (x) => ({ 'mehr als': 'höchstens', mindestens: 'weniger als', 'höchstens': 'mehr als', 'weniger als': 'mindestens' })[x]));
+      // Gegenereignis als Intervall
+      [ga, gb] = e.a === 0 ? [e.b + 1, n] : [0, e.a - 1];
+    } else {
+      const art = R.wahl(['zwischenOffen', 'zwischen']);
+      e = ereignis(art, n, p, anzW);
+      if (!e) return gen['bv-gegen'](stufe);
+      const lo = art === 'zwischenOffen' ? e.a - 1 : e.a, hi = art === 'zwischenOffen' ? e.b + 1 : e.b;
+      if (art === 'zwischenOffen') {
+        gegen = `höchstens ${lo} oder mindestens ${anzW(hi)}`;
+        falsch = [`weniger als ${lo} oder mehr als ${anzW(hi)}`, `mindestens ${lo} und höchstens ${anzW(hi)}`, `höchstens ${lo} und mindestens ${anzW(hi)}`];
+      } else {
+        gegen = `weniger als ${lo} oder mehr als ${anzW(hi)}`;
+        falsch = [`höchstens ${lo} oder mindestens ${anzW(hi)}`, `mehr als ${lo} und weniger als ${anzW(hi)}`, `weniger als ${lo} und mehr als ${anzW(hi)}`];
+      }
+      [ga, gb, ga2, gb2] = [0, e.a - 1, e.b + 1, n];
+    }
+    const wE = e.w, wG = 1 - wE;
+    const gTex = ga2 === undefined ? pTexAB(ga, gb, n) : `${pTexAB(ga, gb, n)}+${pTexAB(ga2, gb2, n)}`;
+    return {
+      frage: `${einl} Gib das Gegenereignis zu „${e.text}“ an und bestimme seine Wahrscheinlichkeit. ${RUNDEN}`,
+      felder: [auswahl('Gegenereignis', gegen, falsch.slice(0, 3)), wFeld('Wahrscheinlichkeit des Gegenereignisses', wG)],
+      notiz: true,
+      hinweis: 'Das Gegenereignis enthält genau die Werte von $X$, die nicht zum Ereignis gehören. Seine Wahrscheinlichkeit ist $1-P(\\text{Ereignis})$.',
+      loesung: [
+        `„${e.text}“ sind die Werte ${e.a} bis ${e.b}. Gegenereignis: „${gegen}“.`,
+        `$${gTex}=1-${pTexAB(e.a, e.b, n)}\\approx 1-${dzTex(wE)}=${dzTex(wG)}$`,
+        `Mit der CAS-App z. B. ${code(`1-${cdfCode(n, pB, e.a, e.b)}`)}.`,
+      ],
+    };
+  };
+
+  // ---------- Sachaufgaben, kumuliert ----------
+  const PLATZ = [
+    {
+      satz: (n, pB) => `Von den ${n} Beschäftigten einer Firma kommen an einem Arbeitstag durchschnittlich ${pProzent(pB)} mit dem Auto.`,
+      X: 'die Anzahl der Beschäftigten, die mit dem Auto kommen', ding: 'Parkplätze', reicht: (c) => `ein Parkplatz mit ${c} Plätzen ausreicht`,
+      frageMin: (q) => `Wie viele Parkplätze müssen mindestens vorhanden sein, damit sie mit einer Wahrscheinlichkeit von mindestens ${q} % ausreichen?`,
+      annahme: 'Die Beschäftigten entscheiden unabhängig voneinander, ob sie mit dem Auto kommen.',
+      n: [80, 100, 120, 150], p: ['0,3', '0,35', '0,45'].map(Bruch.dez),
+    },
+    {
+      satz: (n, pB) => `An einer Schule mit ${n} Schülerinnen und Schülern isst jede bzw. jeder an einem Tag mit einer Wahrscheinlichkeit von ${pProzent(pB)} in der Mensa.`,
+      X: 'die Anzahl der Mensa-Essen an einem Tag', ding: 'Essen', reicht: (c) => `${c} vorbereitete Essen ausreichen`,
+      frageMin: (q) => `Wie viele Essen müssen mindestens vorbereitet werden, damit sie mit einer Wahrscheinlichkeit von mindestens ${q} % ausreichen?`,
+      annahme: 'Alle entscheiden unabhängig voneinander und mit derselben Wahrscheinlichkeit, ob sie in der Mensa essen.',
+      n: [200, 300, 400], p: ['0,2', '0,25', '0,3'].map(Bruch.dez),
+    },
+    {
+      satz: (n, pB) => `Ein Fitnessstudio hat ${n} Mitglieder. Zur Hauptzeit am Abend ist jedes Mitglied mit einer Wahrscheinlichkeit von ${pProzent(pB)} im Studio.`,
+      X: 'die Anzahl der Mitglieder im Studio', ding: 'Spinde', reicht: (c) => `${c} Spinde ausreichen`,
+      frageMin: (q) => `Wie viele Spinde müssen mindestens vorhanden sein, damit sie mit einer Wahrscheinlichkeit von mindestens ${q} % ausreichen?`,
+      annahme: 'Die Mitglieder entscheiden unabhängig voneinander, ob sie zur Hauptzeit kommen.',
+      n: [250, 400, 500], p: ['0,1', '0,12', '0,15'].map(Bruch.dez),
+    },
+  ];
+  gen['bv-kum-kontext'] = (stufe) => {
+    if (stufe === 3) {
+      const P = R.wahl(PLATZ);
+      const n = R.wahl(P.n), pB = R.wahl(P.p), p = pB.zahl();
+      const q = R.wahl([90, 95, 99]);
+      let c = 0;
+      while (cdf(n, p, 0, c) < q / 100) c++;
+      const c0 = Math.round(n * p) + R.wahl([-2, 1, 3]);
+      const w0 = cdf(n, p, 0, c0);
+      return {
+        frage: `${P.satz(n, pB)} Die Zufallsgröße $X$ gibt ${P.X} an.<br>a) Berechne die Wahrscheinlichkeit, dass ${P.reicht(c0)}. ${RUNDEN}<br>b) ${P.frageMin(q)}<br>c) Welche Annahme braucht man, damit man mit der Binomialverteilung rechnen darf?`,
+        felder: [
+          wFeld('a) Wahrscheinlichkeit', w0),
+          { art: 'zahl', label: `b) Anzahl der ${P.ding}`, antwort: new Bruch(c) },
+          auswahl('c) Annahme', P.annahme, ['Die Anzahl steht vorher fest.', 'Die Hälfte aller Fälle sind Treffer.', `Es werden genau ${Math.round(n * p)} gezählt.`]),
+        ],
+        notiz: true,
+        hinweis: `a) „reicht aus“ heißt $X\\le ${c0}$. b) Probiere verschiedene Anzahlen $c$ mit ${code(`binomCdf(${n},${casP(pB)},0,c)`)} aus – gesucht ist das kleinste $c$ mit $P(X\\le c)\\ge ${dzTex(q / 100, 2)}$.`,
+        loesung: [
+          `$n=${n}$, $p=${pTex(pB)}$. a) $P(X\\le ${c0})\\approx ${dzTex(w0)}$`,
+          `b) $P(X\\le ${c - 1})\\approx ${dzTex(cdf(n, p, 0, c - 1))}<${dzTex(q / 100, 2)}$, aber $P(X\\le ${c})\\approx ${dzTex(cdf(n, p, 0, c))}\\ge ${dzTex(q / 100, 2)}$. Es müssen mindestens ${c} ${P.ding} vorhanden sein.`,
+          `c) ${P.annahme} Außerdem: für jede Person dieselbe Wahrscheinlichkeit.`,
+        ],
+      };
+    }
+    const c = kumKontext();
+    const { K, n, pB, p } = c;
+    const arten = stufe === 1 ? R.mische(['hoechstens', 'mindestens']) : R.mische(['mehrAls', 'wenigerAls', 'zwischenOffen', 'genau']).slice(0, 3);
+    const ev = [];
+    for (const art of arten) {
+      const e = ereignis(art, n, p, K.anz);
+      if (e && !ev.some((x) => x.text === e.text)) ev.push(e);
+    }
+    if (ev.length < 2) return gen['bv-kum-kontext'](stufe);
+    const B = 'abcd';
+    return {
+      frage: `${kumEinleitung(c)} Berechne die Wahrscheinlichkeiten der folgenden Ereignisse mit der CAS-App. ${RUNDEN}`,
+      felder: ev.map((e, i) => wFeld(`${B[i]}) „${e.text}“`, e.w)),
+      notiz: true,
+      hinweis: `Übersetze jedes Ereignis zuerst in Grenzen: ${GRENZEN_TIPP} Für „genau“ reicht ${code('binomPdf')}.`,
+      loesung: [`$n=${n}$, $p=${pTex(pB)}$.`, ...ev.map((e, i) => `${B[i]}) $${pTexAB(e.a, e.b, n)}$: ${code(e.a === e.b ? `binomPdf(${n},${casP(pB)},${e.a})` : cdfCode(n, pB, e.a, e.b))} $\\approx ${dzTex(e.w)}$`)],
+    };
+  };
+
+  UM.binomial = { bk, pdf, pdfExakt, cdf, KONTEXTE, KUM, histSvg };
 })(typeof window !== 'undefined' ? window : globalThis);
