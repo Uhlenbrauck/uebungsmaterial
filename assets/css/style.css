@@ -298,6 +298,13 @@ table.vft tr:last-child td, table.vft td:last-child { background: #f9fafc; }
 .bild > svg[aria-label="Graph einer Parabel"] { max-width: 360px; }
 .option svg.klein { width: 140px; height: auto; display: block; }
 
+/* Histogramme (Binomialverteilung) */
+.hg-balken { fill: #2563c9; }
+.hg-markiert { fill: #e07b1a; }
+.hg-titel { font-size: 16px; font-weight: 700; font-family: system-ui, sans-serif; fill: #1d2433; }
+.bild > svg[aria-label="Histogramm"] { max-width: 600px; }
+.option svg.hist-klein { width: 260px; max-width: 100%; height: auto; display: block; }
+
 /* CAS-Eingaben */
 code.cas { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .95em; background: #eef1f6; border: 1px solid var(--linie); border-radius: 4px; padding: .05rem .3rem; white-space: nowrap; }
 .eingabe::placeholder { color: #a2a9b6; }

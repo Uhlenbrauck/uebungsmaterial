@@ -40,6 +40,15 @@
         ]
       },
       {
+        "id": "histogramme",
+        "zeilen": [
+          "Ich kann Histogramme einer Binomialverteilung lesen und beschreiben, wie ihre Form von $n$ und $p$ abhängt."
+        ],
+        "uebungen": [
+          { "gen": "bv-histogramm", "titel": "Histogramme lesen, zuordnen und prüfen" }
+        ]
+      },
+      {
         "id": "formel",
         "zeilen": [
           "Ich kann die Formel von Bernoulli $P(X=k)=\\binom{n}{k}\\cdot p^k\\cdot (1-p)^{n-k}$ aufstellen und ihre Teile erklären, …",

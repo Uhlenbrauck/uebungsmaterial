@@ -483,5 +483,187 @@
     };
   };
 
-  UM.binomial = { bk, pdf, pdfExakt, KONTEXTE };
+
+  // =====================================================================
+  // Histogramme
+  // =====================================================================
+  function schritt(max, ziel) {
+    const roh = max / ziel, mag = 10 ** Math.floor(Math.log10(roh));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * mag >= roh - 1e-12) return m * mag;
+    return 10 * mag;
+  }
+  const komma = (x, d) => x.toFixed(d).replace('.', ',');
+  /**
+   * Histogramm als SVG.
+   * opt: kMax (Ende der k-Achse), yMax, markiert (Menge von k), werte (Balkenhöhen beschriften), klein, titel
+   */
+  function histSvg(werte, opt = {}) {
+    const klein = !!opt.klein;
+    const W = klein ? 300 : 560, H = klein ? 190 : 270;
+    const m = klein ? { l: 38, r: 8, t: 14, b: 26 } : { l: 52, r: 14, t: opt.werte ? 26 : 16, b: 40 };
+    const n = werte.length - 1;
+    const kMax = Math.max(opt.kMax ?? n, n);
+    const datenMax = Math.max(...werte);
+    const yS = schritt(opt.yMax ?? datenMax, klein ? 3 : 5);
+    const yMax = opt.yMax ?? Math.ceil(datenMax / yS - 1e-9) * yS;
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const slot = pw / (kMax + 1), bw = slot * (kMax > 25 ? 0.86 : 0.78);
+    const X = (k) => m.l + slot * (k + 0.5), Y = (v) => m.t + ph * (1 - Math.min(v, yMax) / yMax);
+    const yDez = (String(+yS.toPrecision(6)).split('.')[1] || '').length;
+    let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Histogramm"${klein ? ' class="hist-klein"' : ''}>`;
+    for (let i = 0; i * yS <= yMax + 1e-9; i++) {
+      const y = Y(i * yS);
+      if (i > 0) s += `<line x1="${m.l}" x2="${m.l + pw}" y1="${y}" y2="${y}" class="ks-gitter"/>`;
+      s += `<text x="${m.l - 6}" y="${y + 4}" class="ks-zahl ks-links">${i === 0 ? '0' : komma(i * yS, yDez)}</text>`;
+    }
+    for (let k = 0; k <= n; k++) {
+      const y = Y(werte[k]);
+      s += `<rect x="${X(k) - bw / 2}" y="${y}" width="${bw}" height="${m.t + ph - y}" class="hg-balken${opt.markiert && opt.markiert.has(k) ? ' hg-markiert' : ''}"/>`;
+      if (opt.werte) s += `<text x="${X(k)}" y="${y - 5}" class="ks-zahl">${komma(werte[k], 2)}</text>`;
+    }
+    s += `<line x1="${m.l}" x2="${m.l + pw}" y1="${m.t + ph}" y2="${m.t + ph}" class="ks-achse"/>`;
+    s += `<line x1="${m.l}" x2="${m.l}" y1="${m.t + ph}" y2="${m.t - 6}" class="ks-achse"/>`;
+    let ks = 1;
+    for (const t of [1, 2, 5, 10]) { ks = t; if (slot * t >= (klein ? 18 : 24)) break; }
+    for (let k = 0; k <= kMax; k += ks) s += `<text x="${X(k)}" y="${m.t + ph + 15}" class="ks-zahl">${k}</text>`;
+    if (!klein) s += `<text x="${m.l + pw}" y="${H - 4}" class="ks-text" text-anchor="end">k</text>`;
+    if (opt.titel) s += `<text x="${m.l + 8}" y="${m.t + 14}" class="hg-titel">${opt.titel}</text>`;
+    return s + '</svg>';
+  }
+  /** wahrscheinlichster Wert, falls eindeutig */
+  function modus(werte) {
+    const max = Math.max(...werte);
+    const ks = werte.map((w, k) => (max - w < 1e-9 ? k : -1)).filter((k) => k >= 0);
+    return ks.length === 1 ? ks[0] : null;
+  }
+  const npText = (n, pB) => `$n=${n}$, $p=${pTex(pB)}$`;
+
+  gen['bv-histogramm'] = (stufe) => {
+    if (stufe === 1) {
+      const c = kontext({ nMin: 6, nMax: 14 });
+      const { K, n, pB, p } = c;
+      const werte = Array.from({ length: n + 1 }, (_, k) => pdf(n, p, k));
+      const mo = modus(werte);
+      if (mo === null) return gen['bv-histogramm'](stufe);
+      // Ablesen: ein Balken, der nicht der höchste ist, mit gut ablesbarer Höhe
+      const k2 = gutesK(n, p, { grenze: 0.06, ausser: [mo] });
+      if (k2 === null) return gen['bv-histogramm'](stufe);
+      const richtig = komma(werte[k2], 2);
+      const falsch = [];
+      for (const d of R.mische([-0.1, -0.05, 0.05, 0.1, 0.15])) {
+        const v = Math.round((werte[k2] + d) * 100) / 100;
+        const t = komma(v, 2);
+        if (v > 0 && v < 1 && t !== richtig && !falsch.includes(t)) falsch.push(t);
+        if (falsch.length === 3) break;
+      }
+      // Ereignis „höchstens m“ oder „mindestens m“
+      // m so wählen, dass das Ereignis sichtbare Balken enthält und nicht fast sicher ist
+      const hoechst = Math.random() < 0.5;
+      const kandM = [];
+      for (let m = 2; m <= n - 2; m++) {
+        let pe = 0;
+        for (let k = 0; k <= n; k++) if (hoechst ? k <= m : k >= m) pe += werte[k];
+        if (pe >= 0.15 && pe <= 0.85) kandM.push(m);
+      }
+      if (!kandM.length) return gen['bv-histogramm'](stufe);
+      const mm = R.wahl(kandM);
+      const ereignis = `${hoechst ? 'höchstens' : 'mindestens'} ${K.anz(mm)}`;
+      const bereich = (a, b) => (a === b ? `nur der Balken bei k = ${a}` : `die Balken bei k = ${a} bis k = ${b}`);
+      const rE = hoechst ? bereich(0, mm) : bereich(mm, n);
+      const fE = hoechst ? [bereich(0, mm - 1), bereich(mm, n), bereich(mm, mm)] : [bereich(mm + 1, n), bereich(0, mm), bereich(mm, mm)];
+      const markiert = new Set(Array.from({ length: n + 1 }, (_, k) => k).filter((k) => (hoechst ? k <= mm : k >= mm)));
+      return {
+        frage: `${einleitung(c)} Das Histogramm zeigt die Wahrscheinlichkeitsverteilung von $X$.`,
+        bild: histSvg(werte),
+        felder: [
+          { art: 'zahl', label: 'Wahrscheinlichster Wert von $k$', antwort: new Bruch(mo) },
+          auswahl(`P(X = ${k2}) beträgt ungefähr`, richtig, falsch),
+          auswahl(`Zum Ereignis „${ereignis}“ gehören`, rE, fE),
+        ],
+        hinweis: 'Jeder Balken gehört zu einem Wert $k$ auf der Rechtsachse. Seine Höhe ist die Wahrscheinlichkeit $P(X=k)$ – lies sie an der Hochachse ab.',
+        loesung: [
+          `Der höchste Balken steht bei $k=${mo}$. Der Balken bei $k=${k2}$ ist etwa ${richtig} hoch: $P(X=${k2})=${dzTex(werte[k2])}$.`,
+          `„${ereignis}“ heißt $X${hoechst ? '\\le' : '\\ge'} ${mm}$: ${rE} (im Bild markiert).`,
+          { svg: histSvg(werte, { markiert }) },
+        ],
+      };
+    }
+    if (stufe === 2) {
+      // vier Verteilungen mit gleichen Achsen
+      const n0 = R.wahl([10, 20]);
+      const p0 = R.wahl(['0,2', '0,3', '0,7', '0,8'].map(Bruch.dez));
+      const n1 = n0 + 10;
+      const satz = [
+        { n: n0, pB: p0 },
+        { n: n0, pB: EINS.minus(p0) },
+        { n: n0, pB: Bruch.dez('0,5') },
+        { n: n1, pB: p0 },
+      ];
+      const kMax = n1;
+      const alle = satz.map((d) => Array.from({ length: d.n + 1 }, (_, k) => pdf(d.n, d.pB.zahl(), k)));
+      const yMax = schritt(Math.max(...alle.flat()), 4) * Math.ceil(Math.max(...alle.flat()) / schritt(Math.max(...alle.flat()), 4) - 1e-9);
+      const ziel = R.int(0, 3);
+      const t = satz[ziel];
+      const erkl = [
+        `Bei $p=${pTex(t.pB)}$ liegt der Gipfel ${t.pB.zahl() < 0.5 ? 'links' : 'rechts'}, ungefähr beim Anteil $${pTex(t.pB)}$ der $${t.n}$ Versuche, also bei $k\\approx ${Math.round(t.n * t.pB.zahl())}$.`,
+        `Bei $p=${pTex(t.pB)}$ liegt der Gipfel ${t.pB.zahl() < 0.5 ? 'links' : 'rechts'}, ungefähr beim Anteil $${pTex(t.pB)}$ der $${t.n}$ Versuche, also bei $k\\approx ${Math.round(t.n * t.pB.zahl())}$.`,
+        `Bei $p=0{,}5$ ist das Histogramm symmetrisch mit dem Gipfel in der Mitte bei $k=${t.n / 2}$.`,
+        `Bei $n=${t.n}$ statt $${n0}$ liegt der Gipfel weiter rechts (bei $k\\approx ${Math.round(t.n * t.pB.zahl())}$), und das Histogramm ist breiter und flacher.`,
+      ][ziel];
+      if (Math.random() < 0.5) {
+        // Parameter gegeben, Histogramm wählen
+        const reihenfolge = R.mische([0, 1, 2, 3]);
+        return {
+          frage: `Welches Histogramm gehört zur Binomialverteilung mit ${npText(t.n, t.pB)}? Alle vier Histogramme haben dieselben Achsen.`,
+          felder: [{ art: 'auswahl', label: 'Histogramm', optionen: reihenfolge.map((i) => histSvg(alle[i], { kMax, yMax, klein: true })), richtig: reihenfolge.indexOf(ziel) }],
+          hinweis: 'Achte auf die Lage des Gipfels (Anteil $p$ der $n$ Versuche), auf die Symmetrie und auf Breite und Höhe.',
+          loesung: [erkl, { svg: histSvg(alle[ziel], { kMax, yMax }) }],
+        };
+      }
+      // Histogramm gegeben, Parameter wählen
+      const opt = satz.map((d) => npText(d.n, d.pB));
+      const reihenfolge = R.mische([0, 1, 2, 3]);
+      return {
+        frage: 'Zu welcher Binomialverteilung gehört das Histogramm?',
+        bild: histSvg(alle[ziel], { kMax, yMax }),
+        felder: [{ art: 'auswahl', label: 'Verteilung', optionen: reihenfolge.map((i) => opt[i]), richtig: reihenfolge.indexOf(ziel) }],
+        hinweis: 'Wo liegt der Gipfel im Verhältnis zur Anzahl der Versuche? Ist das Histogramm symmetrisch? Wie weit reichen die Balken, die man noch sieht?',
+        loesung: [`${opt[ziel]}. ${erkl}`],
+      };
+    }
+    // Stufe 3: Kann das ein Histogramm von B(n; p) sein?
+    const GRUENDE = [
+      'Ja, es kann passen: Die Höhen ergeben zusammen 1, es gibt nur einen Gipfel, und seine Lage passt zu $p$.',
+      'Nein, die Balkenhöhen ergeben zusammen nicht 1.',
+      'Nein, das Diagramm hat zwei getrennte Gipfel.',
+      'Nein, für $p=0{,}5$ müsste das Histogramm symmetrisch sein.',
+      'Nein, der Gipfel liegt auf der falschen Seite.',
+    ];
+    const n = R.int(6, 10);
+    const art = R.wahl([0, 0, 1, 2, 3, 4]);
+    let pB, werte;
+    const b = (q) => Array.from({ length: n + 1 }, (_, k) => pdf(n, q, k));
+    if (art === 0) { pB = R.wahl(['0,2', '0,3', '0,4', '0,5', '0,6', '0,7', '0,8'].map(Bruch.dez)); werte = b(pB.zahl()); }
+    else if (art === 1) { pB = R.wahl(['0,3', '0,4', '0,6', '0,7'].map(Bruch.dez)); const f = R.wahl([0.7, 1.3, 1.4]); werte = b(pB.zahl()).map((w) => w * f); }
+    else if (art === 2) { pB = R.wahl(['0,4', '0,5', '0,6'].map(Bruch.dez)); const u = b(0.15), v = b(0.8); werte = u.map((w, k) => 0.5 * w + 0.5 * v[k]); }
+    else if (art === 3) { pB = Bruch.dez('0,5'); werte = b(R.wahl([0.35, 0.65])); }
+    else { pB = R.wahl(['0,2', '0,3', '0,7', '0,8'].map(Bruch.dez)); werte = b(1 - pB.zahl()); }
+    const summe = werte.reduce((a, w) => a + w, 0);
+    const begruendung = [
+      'Die Höhen ergeben zusammen 1, es gibt einen Gipfel, und er liegt passend zu $p$.',
+      `Die Balkenhöhen ergeben zusammen etwa $${dzTex(summe, 2)}$. Bei einer Wahrscheinlichkeitsverteilung muss die Summe 1 sein.`,
+      'Ein Histogramm einer Binomialverteilung steigt bis zu einem Gipfel an und fällt danach ab. Hier gibt es zwei getrennte Gipfel.',
+      `Bei $p=0{,}5$ sind Treffer und Niete gleich wahrscheinlich, das Histogramm müsste symmetrisch zu $k=${komma(n / 2, n % 2 ? 1 : 0)}$ sein.`,
+      `Bei $p=${pTex(pB)}$ sind Treffer ${pB.zahl() < 0.5 ? 'seltener als Nieten, der Gipfel müsste links' : 'häufiger als Nieten, der Gipfel müsste rechts'} liegen.`,
+    ][art];
+    return {
+      frage: `Das Diagramm soll die Binomialverteilung mit ${npText(n, pB)} zeigen. Die Zahlen über den Balken sind die Balkenhöhen. Kann das stimmen?`,
+      bild: histSvg(werte, { werte: true }),
+      felder: [{ art: 'auswahl', label: 'Entscheide und begründe', optionen: GRUENDE, richtig: art }],
+      hinweis: 'Prüfe nacheinander: Summe der Höhen, Anzahl der Gipfel, Lage des Gipfels (kleines $p$: links, großes $p$: rechts), Symmetrie bei $p=0{,}5$.',
+      loesung: [`${GRUENDE[art]} ${begruendung}`],
+    };
+  };
+
+  UM.binomial = { bk, pdf, pdfExakt, KONTEXTE, histSvg };
 })(typeof window !== 'undefined' ? window : globalThis);
