@@ -294,7 +294,7 @@ test('Fehler finden: Aufgabe ist wirklich falsch, Lösung richtig', () => {
   }
 });
 
-for (const pfad of ['mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js', 'mathematik/q2/binomialverteilung/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
+for (const pfad of ['mathematik/klasse-5/daten-addieren-subtrahieren/thema.js', 'mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js', 'mathematik/q2/binomialverteilung/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
   const UMt = lade(...ALLE, pfad);
   const ids = new Set();
   for (const k of UMt.thema.kompetenzen) {
@@ -304,5 +304,80 @@ for (const pfad of ['mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik
     for (const u of k.uebungen) assert.ok(UMt.generatoren[u.gen], `${k.id}: ${u.gen} fehlt`);
     for (const n of [...(k.notizbuch || []), ...(k.notizbuchUeben || [])]) assert.ok(n.onenote.startsWith('onenote:') && (!n.web || n.web.startsWith('https://')), n.titel);
     for (const g of k.realmath || []) for (const l of g.links) assert.ok(l.url.startsWith('https://realmath.de/'), l.url);
+  }
+});
+
+test('Eingabe: ganze Zahlen mit Dreiergruppen', () => {
+  const W = (z) => new UM.Bruch(z);
+  assert.ok(UM.pruefeZahl('72 500', W(72500)).ok);
+  assert.ok(UM.pruefeZahl('3 600 000', W(3600000)).ok);
+  assert.ok(UM.pruefeZahl('1\u202f750', W(1750)).ok);
+  assert.ok(UM.pruefeZahl('1 3/4', new UM.Bruch(7, 4)).ok);
+  assert.strictEqual(UM.leseEingabe('72 50'), null);
+});
+
+test('Klasse 5: Häufigkeiten passen zur Urliste', () => {
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-haeufigkeit'](1 + (i % 3));
+    const werte = [...a.bild.matchAll(/<span>([^<]+)<\/span>/g)].map((m) => m[1]);
+    const zahlen = a.felder.filter((f) => !f.label.startsWith('Probe')).map((f) => f.antwort.z);
+    assert.strictEqual(zahlen.reduce((x, y) => x + y, 0), werte.length);
+    const probe = a.felder.find((f) => f.label.startsWith('Probe'));
+    if (probe) assert.strictEqual(probe.antwort.z, werte.length);
+  }
+});
+
+test('Klasse 5: Probe erkennt die falsche Zeile', () => {
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-probe'](2 + (i % 2));
+    const n = Number(/wurden (\d+) Kinder/.exec(a.frage)[1]);
+    assert.notStrictEqual(a.felder[0].antwort.z, n, a.frage);
+  }
+});
+
+test('Klasse 5: Klammer setzen hat genau eine richtige Möglichkeit', () => {
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-klammer-setzen'](1 + (i % 3));
+    const f = a.felder[0];
+    const ziel = Number(a.term.split('=').pop());
+    const werte = f.optionen.map((o) => (o.startsWith('Es ist') ? texWert(a.term.split('=')[0]) : texWert(o.slice(1, -1).split('=')[0])));
+    assert.strictEqual(werte.filter((w) => w === ziel).length, 1, a.term + ' ' + f.optionen.join(' | '));
+    assert.strictEqual(werte[f.richtig], ziel);
+  }
+});
+
+test('Klasse 5: Text als Rechnung – Auswahl und Ergebnis passen', () => {
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-text'](1 + (i % 3));
+    const [wahl, erg] = a.felder;
+    const w = texWert(wahl.optionen[wahl.richtig].slice(1, -1));
+    assert.strictEqual(w, erg.antwort.z);
+    assert.ok(w > 0);
+    const andere = wahl.optionen.filter((_, j) => j !== wahl.richtig).map((o) => texWert(o.slice(1, -1)));
+    assert.ok(andere.every((x) => x !== w), a.frage);
+  }
+});
+
+test('Klasse 5: Rückwärts runden', () => {
+  const stellen = { Zehner: 10, Hunderter: 100, Tausender: 1000, Zehntausender: 10000, Hunderttausender: 100000, Millionen: 1000000 };
+  const rund = (x, s) => Math.round(x / s) * s;
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-runden-rueck'](1 + (i % 3));
+    const s = stellen[/auf (\w+) gerundet/.exec(a.frage)[1]];
+    const g = Number(/ist ([\d\u202f]+)\./.exec(a.frage)[1].replace(/\u202f/g, ''));
+    const [k, gr] = a.felder.map((f) => f.antwort.z);
+    assert.strictEqual(rund(k, s), g);
+    assert.strictEqual(rund(gr, s), g);
+    assert.notStrictEqual(rund(k - 1, s), g);
+    assert.notStrictEqual(rund(gr + 1, s), g);
+  }
+});
+
+test('Klasse 5: Platzhalter – Probe stimmt', () => {
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['k5-platzhalter'](1 + (i % 3));
+    if (!a.term) continue;
+    const [l, r] = a.term.replace('\\square', String(a.felder[0].antwort.z)).split('=');
+    assert.strictEqual(texWert(l), texWert(r), a.term);
   }
 });

@@ -21,6 +21,8 @@ assets/
   js/katalog.js                Inhaltsverzeichnis der Startseite
   js/generatoren/*.js          Aufgaben-Generatoren je Themengebiet
   vendor/katex/                KaTeX 0.16 (MIT-Lizenz), nur woff2-Schriften
+mathematik/klasse-5/daten-addieren-subtrahieren/
+                               Daten und Diagramme · Addieren und Subtrahieren (Klasse 5)
 mathematik/klasse-7/rationale-zahlen/
   index.html                   Seite des Themas
   thema.js                     Kompetenzen (= Checkliste), Übungen, Realmath-Links, Test-Einstellungen

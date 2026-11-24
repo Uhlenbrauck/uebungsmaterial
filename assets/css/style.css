@@ -323,3 +323,12 @@ code.cas { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fon
 ol.rechnung { background: #fff; border: 1px solid var(--linie); border-radius: 6px; padding: .5rem .8rem .5rem 2.6rem; margin: .4rem 0; max-width: 560px; }
 ol.rechnung li { padding: .2rem 0; }
 ol.rechnung li::marker { color: var(--leise, #5b6475); font-size: .9em; }
+
+/* Klasse 5: Urlisten und Häufigkeitstabellen */
+.k5-urliste { background: #fdf1dc; border: 1px solid #ecd3a6; border-radius: 6px; padding: .45rem .8rem; margin: .4rem 0; max-width: 680px; }
+.k5-urliste-titel { font-weight: 600; font-size: .92em; margin-bottom: .2rem; }
+.k5-urliste-werte { line-height: 1.9; word-spacing: .35rem; font-variant-numeric: tabular-nums; }
+table.k5-tabelle { border-collapse: collapse; background: #fff; margin: .4rem 0; }
+table.k5-tabelle th, table.k5-tabelle td { border: 1px solid #9aa6bb; padding: .3rem .8rem; text-align: center; min-width: 5rem; }
+table.k5-tabelle thead th { background: var(--flaeche); }
+.bild > svg[aria-label="Säulendiagramm"], .bild > svg[aria-label="Balkendiagramm"] { max-width: 600px; }
