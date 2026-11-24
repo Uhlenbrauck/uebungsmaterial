@@ -29,6 +29,7 @@ const ALLE = [
   'assets/js/generatoren/quadratische-funktionen.js',
   'assets/js/generatoren/cas-befehle.js',
   'assets/js/generatoren/binomialverteilung.js',
+  'assets/js/generatoren/klasse5-daten-rechnen.js',
 ];
 
 /**

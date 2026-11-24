@@ -10,6 +10,17 @@
       fach: 'Mathematik',
       bereiche: [
         {
+          titel: 'Klasse 5',
+          themen: [
+            {
+              titel: 'Daten und Diagramme · Addieren und Subtrahieren',
+              text: 'Urliste und Häufigkeitstabelle, Säulen- und Balkendiagramme, Histogramme, Kopfrechnen, Klammern, Texte als Rechnung, schriftliches Rechnen, Umkehraufgaben und Rechengesetze. Mit Checkliste und Abschlusstest.',
+              pfad: 'mathematik/klasse-5/daten-addieren-subtrahieren/index.html',
+              status: 'neu',
+            },
+          ],
+        },
+        {
           titel: 'Klasse 7',
           themen: [
             {

@@ -114,6 +114,8 @@
       .trim();
     if (/^\(.*\)$/.test(s)) s = s.slice(1, -1).trim();
     if (s === '') return null;
+    // Ganze Zahlen mit Dreiergruppen („72 500“, „3 600 000“)
+    if (/^[+-]?\s*\d{1,3}(?:[ \u202f]\d{3})+$/.test(s)) s = s.replace(/[ \u202f]/g, '');
     let m;
     if ((m = /^([+-]?)\s*(\d+)$/.exec(s))) {
       const w = Number(m[2]);

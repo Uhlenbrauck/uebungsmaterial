@@ -54,7 +54,7 @@
     const mitEinschaetzung = thema.einschaetzung !== false;
     const arbeit = thema.arbeit || 'Klassenarbeit';
     const LISTE = mitEinschaetzung ? 'Das muss ich können' : 'Darum geht es';
-    const mitInfo = mitEinschaetzung || thema.kompetenzen.some((k) => k.notizbuch || k.buch);
+    const mitInfo = mitEinschaetzung || thema.kompetenzen.some((k) => k.notizbuch || k.buch || k.arbeitsheft);
     const haupt = document.getElementById('inhalt');
     document.title = `${thema.titel} – Übungsmaterial`;
 
@@ -134,7 +134,8 @@
               el('td', { class: 'ck-info', rowspan: n },
                 ...notizbuchLinks(k.notizbuch),
                 k.buch ? el('div', {}, '📘 Buch ' + k.buch) : null,
-                !k.notizbuch && !k.buch ? el('span', { class: 'leise' }, '–') : null));
+                k.arbeitsheft ? el('div', {}, '📗 Arbeitsheft ' + k.arbeitsheft) : null,
+                !k.notizbuch && !k.buch && !k.arbeitsheft ? el('span', { class: 'leise' }, '–') : null));
             tr.append(
               el('td', { class: 'ck-ueben', rowspan: n },
                 el('div', { class: 'ueben-titel' }, 'Übungen auf dieser Seite:'),
