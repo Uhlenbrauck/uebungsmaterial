@@ -6,6 +6,7 @@
  * mindestens vier Nachkommastellen (oder zwei in Prozent); wo der Wert ein kurzer Bruch ist, zählt auch der Bruch.
  * CAS-Befehl: binomPdf(n,p,k) (TI-Nspire CAS), Prüfung in assets/js/cas.js.
  * Formel im Unterricht: P(X=k) = (n über k) · p^k · (1−p)^(n−k).
+ * Kenngrößen (AB 40/41): μ = n·p, σ = √(n·p·(1−p)); σ-Regeln gehören nicht zum GK.
  *
  * Die Aufgaben orientieren sich am Unterricht (Galtonbrett, Bernoulli-Kette, Formel, CAS),
  * nicht an den Aufgaben einer Klausur.
@@ -495,7 +496,7 @@
   const komma = (x, d) => x.toFixed(d).replace('.', ',');
   /**
    * Histogramm als SVG.
-   * opt: kMax (Ende der k-Achse), yMax, markiert (Menge von k), werte (Balkenhöhen beschriften), klein, titel
+   * opt: kMax (Ende der k-Achse), von (Anfang der k-Achse, dann gilt kMax genau), yMax, markiert (Menge von k), werte (Balkenhöhen beschriften), klein, titel
    */
   function histSvg(werte, opt = {}) {
     const klein = !!opt.klein;
@@ -503,8 +504,8 @@
     const m = klein ? { l: 38, r: 8, t: 14, b: 26 } : { l: 52, r: 14, t: opt.werte ? 26 : 16, b: 40 };
     const n = werte.length - 1;
     // opt.zuschneiden: nur den Bereich zeigen, in dem die Balken sichtbar sind (große n)
-    let von = 0;
-    let kMax = Math.max(opt.kMax ?? n, n);
+    let von = opt.von ?? 0;
+    let kMax = opt.von !== undefined ? opt.kMax : Math.max(opt.kMax ?? n, n);
     if (opt.zuschneiden) {
       const sichtbar = werte.map((w, k) => (w >= 0.0005 || (opt.markiert && opt.markiert.has(k) && w >= 0.00005) ? k : -1)).filter((k) => k >= 0);
       von = Math.max(0, Math.min(...sichtbar) - 1);
@@ -1025,5 +1026,297 @@
     };
   };
 
-  UM.binomial = { bk, pdf, pdfExakt, cdf, KONTEXTE, KUM, histSvg };
+
+  // =====================================================================
+  // Erwartungswert und Standardabweichung (AB 40/41)
+  // μ = n·p, σ = √(n·p·(1−p)); keine σ-Regeln (GK), nur „Werte, die höchstens σ von μ abweichen“
+  // =====================================================================
+  const MS = [
+    ...KUM,
+    {
+      id: 'wuerfel', p: [new Bruch(1, 6)], n: [60, 90, 120, 150],
+      satz: (n) => `Ein fairer Würfel wird ${n}-mal geworfen.`,
+      X: 'die Anzahl der Sechsen',
+      anz: (k) => pl(k, 'Sechs', 'Sechsen'), ohne: (k) => `${k} Würfe ohne Sechs`,
+    },
+  ];
+  function msKontext(filter) {
+    for (;;) {
+      const K = R.wahl(MS);
+      const pB = R.wahl(K.p);
+      const n = R.wahl(K.n);
+      const c = { K, n, pB, p: pB.zahl() };
+      if (!filter || filter(c)) return c;
+    }
+  }
+  const muB = (n, pB) => new Bruch(n).mal(pB);
+  const sigma = (n, p) => Math.sqrt(n * p * (1 - p));
+  /** μ als TeX: exakt, wenn endliche Dezimalzahl, sonst gerundet */
+  const muTex = (n, pB) => (muB(n, pB).istEndlichDezimal() ? `=${muB(n, pB).tex('dezimal')}` : `\\approx ${dzTex(muB(n, pB).zahl(), 2)}`);
+  const muRechnung = (n, pB) => `\\mu=n\\cdot p=${n}\\cdot ${pTex(pB)}${muTex(n, pB)}`;
+  const sigmaRechnung = (n, pB) => `\\sigma=\\sqrt{n\\cdot p\\cdot(1-p)}=\\sqrt{${n}\\cdot ${pTex(pB)}\\cdot ${pTex(EINS.minus(pB))}}\\approx ${dzTex(sigma(n, pB.zahl()), 2)}`;
+  /** Feld für μ: exakt (zahl) oder gerundet */
+  const muFeld = (label, n, pB) => (muB(n, pB).istEndlichDezimal()
+    ? { art: 'zahl', label, antwort: muB(n, pB) }
+    : { art: 'naeherung', label, wert: muB(n, pB).zahl(), stellen: 2 });
+  const sigmaFeld = (label, n, p) => ({ art: 'naeherung', label, wert: sigma(n, p), stellen: 2 });
+  const STELLEN2 = 'Runde $\\sigma$ auf zwei Nachkommastellen.';
+  const MS_TIPP = 'Bestimme zuerst $n$ und $p$. Die Formeln für $\\mu$ und $\\sigma$ stehen in deinen Unterlagen (AB 40).';
+  /** Werte, die höchstens σ von μ abweichen: Grenzen nach innen gerundet */
+  function sigmaGrenzen(n, p) {
+    const mu = n * p, s = sigma(n, p);
+    return { mu, s, a: Math.max(0, Math.ceil(mu - s - 1e-9)), b: Math.min(n, Math.floor(mu + s + 1e-9)) };
+  }
+
+  // ---------- μ und σ berechnen, deuten, rückwärts ----------
+  const MU_DEUTUNG = (c, mu) => ({
+    richtig: `Bei sehr vielen Wiederholungen (jeweils ${c.n} Versuche) beträgt ${c.K.X} im Mittel ${mu}.`,
+    falsch: [
+      `Bei jeder Wiederholung beträgt ${c.K.X} genau ${mu}.`,
+      `${c.K.X[0].toUpperCase()}${c.K.X.slice(1)} beträgt mit einer Wahrscheinlichkeit von 50 % genau ${mu}.`,
+      `${c.K.X[0].toUpperCase()}${c.K.X.slice(1)} kann nicht größer als ${mu} werden.`,
+    ],
+  });
+  const SIGMA_DEUTUNG = (c) => ({
+    richtig: `$\\sigma$ ist ein Maß dafür, wie stark ${c.K.X} typischerweise vom Erwartungswert abweicht.`,
+    falsch: [
+      `$\\sigma$ ist die Wahrscheinlichkeit dafür, dass ${c.K.X} vom Erwartungswert abweicht.`,
+      `${c.K.X[0].toUpperCase()}${c.K.X.slice(1)} weicht immer um genau $\\sigma$ vom Erwartungswert ab.`,
+      `${c.K.X[0].toUpperCase()}${c.K.X.slice(1)} liegt immer zwischen $\\mu-\\sigma$ und $\\mu+\\sigma$.`,
+    ],
+  });
+  /** (n, p) mit „schönem“ μ und σ für Rückwärtsaufgaben */
+  const RUECKWAERTS = (() => {
+    const liste = [];
+    for (const pt of ['0,1', '0,2', '0,25', '0,3', '0,4', '0,5', '0,6', '0,7', '0,75', '0,8', '0,9']) {
+      const pB = Bruch.dez(pt);
+      for (let n = 10; n <= 300; n++) {
+        const mu = muB(n, pB), v = mu.mal(EINS.minus(pB));
+        const s = Math.sqrt(v.zahl());
+        if (!mu.mal(2).istGanz()) continue;
+        if (Math.abs(Math.round(s * 10) - s * 10) > 1e-9 || s < 1.5) continue;
+        liste.push({ n, pB, mu, s: Math.round(s * 10) / 10 });
+      }
+    }
+    return liste;
+  })();
+  gen['bv-kenngroessen'] = (stufe) => {
+    if (stufe === 1) {
+      const c = msKontext();
+      const { n, pB, p } = c;
+      return {
+        frage: `${kumEinleitung(c)} Berechne den Erwartungswert $\\mu$ und die Standardabweichung $\\sigma$ von $X$. ${STELLEN2}`,
+        felder: [muFeld('$\\mu$', n, pB), sigmaFeld('$\\sigma$', n, p)],
+        notiz: true,
+        hinweis: MS_TIPP,
+        loesung: [`$n=${n}$, $p=${pTex(pB)}$.`, `$${muRechnung(n, pB)}$`, `$${sigmaRechnung(n, pB)}$`],
+      };
+    }
+    if (stufe === 2) {
+      const c = msKontext((x) => muB(x.n, x.pB).istGanz());
+      const { n, pB, p } = c;
+      const mu = muB(n, pB).zahl();
+      const wMu = pdf(n, p, mu);
+      const dm = MU_DEUTUNG(c, mu), ds = SIGMA_DEUTUNG(c);
+      return {
+        frage: `${kumEinleitung(c)} Der Erwartungswert ist $\\mu=${mu}$.<br>a) Welche Aussage über den Erwartungswert ist richtig?<br>b) Berechne $P(X=${mu})$. ${RUNDEN}<br>c) Welche Aussage über die Standardabweichung $\\sigma$ ist richtig?`,
+        felder: [auswahl('a) Erwartungswert', dm.richtig, dm.falsch), wFeld(`b) $P(X=${mu})$`, wMu), auswahl('c) Standardabweichung', ds.richtig, ds.falsch)],
+        notiz: true,
+        hinweis: 'Überlege, was „erwarten“ bei einem Zufallsexperiment bedeutet – und schau dir in b) an, wie wahrscheinlich der Erwartungswert selbst ist.',
+        loesung: [
+          `a) ${dm.richtig} Bei einer einzelnen Wiederholung kann ${c.K.X} auch kleiner oder größer sein.`,
+          `b) ${code(`binomPdf(${n},${casP(pB)},${mu})`)}: $P(X=${mu})\\approx ${dzTex(wMu)}$. Nur in etwa ${prozentText(wMu, 0)} der Fälle tritt genau der Erwartungswert ein.`,
+          `c) ${ds.richtig} Die Ergebnisse streuen um $\\mu$, manche weichen weniger, manche mehr als $\\sigma\\approx ${dzTex(sigma(n, p), 2)}$ ab.`,
+        ],
+      };
+    }
+    // Stufe 3: aus μ und σ auf n und p schließen
+    const r = R.wahl(RUECKWAERTS);
+    const muT = r.mu.tex('dezimal'), sT = dzTex(r.s, r.s % 1 ? 1 : 0), v = r.mu.mal(EINS.minus(r.pB));
+    return {
+      frage: `Eine binomialverteilte Zufallsgröße $X$ hat den Erwartungswert $\\mu=${muT}$ und die Standardabweichung $\\sigma=${sT}$. Bestimme $n$ und $p$.`,
+      felder: [{ art: 'zahl', label: '$n$', antwort: new Bruch(r.n) }, { art: 'zahl', label: '$p$', antwort: r.pB }],
+      notiz: true,
+      hinweis: 'Schreibe beide Formeln mit den gegebenen Zahlen auf. Quadriere die Gleichung für $\\sigma$ und setze $n\\cdot p$ aus der ersten Gleichung ein.',
+      loesung: [
+        `$n\\cdot p=${muT}$ und $n\\cdot p\\cdot(1-p)=${sT}^2=${v.tex('dezimal')}$.`,
+        `Einsetzen: $${muT}\\cdot(1-p)=${v.tex('dezimal')}$, also $1-p=${EINS.minus(r.pB).tex('dezimal')}$ und $p=${r.pB.tex('dezimal')}$.`,
+        `$n=${muT}:${r.pB.tex('dezimal')}=${r.n}$.`,
+        `Probe: $${r.n}\\cdot ${r.pB.tex('dezimal')}=${muT}$ und $\\sqrt{${r.n}\\cdot ${r.pB.tex('dezimal')}\\cdot ${EINS.minus(r.pB).tex('dezimal')}}=${sT}$. Mit dem CAS: ${code(`solve(n*p=${String(r.mu.zahl())} and n*p*(1-p)=${String(v.zahl())},{n,p})`)}.`,
+      ],
+    };
+  };
+
+  // ---------- Werte, die höchstens σ von μ abweichen ----------
+  gen['bv-sigma-umgebung'] = (stufe) => {
+    if (stufe < 3) {
+      const c = msKontext();
+      const { n, pB, p } = c;
+      const { mu, s, a, b } = sigmaGrenzen(n, p);
+      if (b - a < 2) return gen['bv-sigma-umgebung'](stufe);
+      const w = cdf(n, p, a, b);
+      const felder = [{ art: 'zahl', label: 'kleinster Wert', antwort: new Bruch(a) }, { art: 'zahl', label: 'größter Wert', antwort: new Bruch(b) }];
+      const ein = cdfCode(n, pB, a, b);
+      if (stufe === 2) {
+        felder.push({ art: 'cas', label: 'Eingabe', soll: { art: 'binomcdf', n, p, a, b }, loesung: ein, ausgabe: casZahl(w), platzhalter: 'binomCdf(…)' });
+        felder.push({ ...wFeld('Wahrscheinlichkeit', w) });
+      }
+      return {
+        frage: `${kumEinleitung(c)} Gib den kleinsten und den größten Wert von $X$ an, der höchstens um $\\sigma$ vom Erwartungswert abweicht.${stufe === 2 ? ` Berechne dann mit der CAS-App die Wahrscheinlichkeit, dass $X$ einen dieser Werte annimmt. ${RUNDEN}` : ''}`,
+        felder,
+        notiz: true,
+        hinweis: `Berechne $\\mu$ und $\\sigma$, dann $\\mu-\\sigma$ und $\\mu+\\sigma$. $X$ nimmt nur ganze Zahlen an: Runde „nach innen“, also die untere Grenze auf und die obere ab.${stufe === 2 ? ` Dann ${code('binomCdf(n,p,untere Grenze,obere Grenze)')}.` : ''}`,
+        loesung: [
+          `$n=${n}$, $p=${pTex(pB)}$: $${muRechnung(n, pB)}$, $${sigmaRechnung(n, pB)}$.`,
+          `$\\mu-\\sigma\\approx ${dzTex(mu - s, 2)}$ und $\\mu+\\sigma\\approx ${dzTex(mu + s, 2)}$. Nach innen gerundet: die Werte von ${a} bis ${b}.`,
+          ...(stufe === 2 ? [`$P(${a}\\le X\\le ${b})$: ${code(ein)} $\\approx ${dzTex(w)}$. Das passt zur Faustregel: etwa zwei Drittel der Ergebnisse weichen höchstens um $\\sigma$ vom Erwartungswert ab.`] : []),
+        ],
+      };
+    }
+    // Stufe 3: Wie weit ist ein Ergebnis vom Erwartungswert entfernt?
+    const c = msKontext();
+    const { K, n, pB, p } = c;
+    const mu = n * p, s = sigma(n, p);
+    const oben = Math.random() < 0.6;
+    const d = R.wahl([2, 2.5, 3]);
+    const x = oben ? Math.ceil(mu + d * s) : Math.floor(mu - d * s);
+    if (x < 0 || x > n) return gen['bv-sigma-umgebung'](stufe);
+    const [a, b] = oben ? [x, n] : [0, x];
+    const w = cdf(n, p, a, b);
+    if (w < 0.0005) return gen['bv-sigma-umgebung'](stufe);
+    const abstand = Math.abs(x - mu) / s;
+    // mit gerundetem σ gerechnet muss dasselbe herauskommen
+    if (komma(Math.abs(x - mu) / Number(s.toFixed(2)), 1) !== komma(abstand, 1)) return gen['bv-sigma-umgebung'](stufe);
+    const ereig = `${oben ? 'mindestens' : 'höchstens'} ${K.anz(x)}`;
+    const AUSSAGEN = [
+      `Ein Ergebnis wie „${ereig}“ kommt nur sehr selten vor, weil es weit vom Erwartungswert entfernt ist.`,
+      `„${ereig}“ kommt etwa in jedem dritten Fall vor.`,
+      `„${ereig}“ ist unmöglich, weil es mehr als $\\sigma$ vom Erwartungswert abweicht.`,
+      `„${ereig}“ ist wahrscheinlicher als genau $${Math.round(mu)}$, weil es mehr Werte umfasst.`,
+    ];
+    return {
+      frage: `${kumEinleitung(c)} Betrachtet wird das Ergebnis „${ereig}“.<br>a) Wie viele Standardabweichungen liegt ${x} vom Erwartungswert entfernt? Runde auf eine Nachkommastelle.<br>b) Berechne $P(X${oben ? '\\ge' : '\\le'} ${x})$. ${RUNDEN}<br>c) Welche Aussage passt?`,
+      felder: [
+        { art: 'naeherung', label: 'a) Anzahl der Standardabweichungen', wert: abstand, stellen: 1 },
+        wFeld(`b) $P(X${oben ? '\\ge' : '\\le'} ${x})$`, w),
+        auswahl('c) Aussage', AUSSAGEN[0], AUSSAGEN.slice(1)),
+      ],
+      notiz: true,
+      hinweis: 'Berechne $\\mu$ und $\\sigma$. Der Abstand von ' + x + ' zu $\\mu$ geteilt durch $\\sigma$ gibt an, wie viele Standardabweichungen das sind.',
+      loesung: [
+        `$${muRechnung(n, pB)}$, $${sigmaRechnung(n, pB)}$.`,
+        `a) $|${x}-${dzTex(mu, Math.abs(mu - Math.round(mu)) < 1e-9 ? 0 : 2)}|:${dzTex(s, 2)}\\approx ${dzTex(abstand, 1)}$ – ${x} liegt also etwa ${komma(abstand, 1)} Standardabweichungen vom Erwartungswert entfernt.`,
+        `b) ${code(cdfCode(n, pB, a, b))} $\\approx ${dzTex(w)}$`,
+        `c) ${AUSSAGEN[0]} Schon innerhalb von einer Standardabweichung um $\\mu$ liegen etwa zwei Drittel der Ergebnisse.`,
+      ],
+    };
+  };
+
+  // ---------- μ und σ im Histogramm, Einfluss von n und p ----------
+  /** drei Verteilungen mit gleichem μ und deutlich verschiedenem σ */
+  function gleichesMu() {
+    for (;;) {
+      const mu = R.wahl([8, 10, 12, 15, 16, 18, 20, 24]);
+      const kand = [];
+      for (const pt of ['0,2', '0,25', '0,3', '0,4', '0,5', '0,6', '0,75', '0,8']) {
+        const pB = Bruch.dez(pt);
+        const nB = new Bruch(mu).durch(pB);
+        if (nB.istGanz() && nB.z <= 80) kand.push({ n: nB.z, pB, s: sigma(nB.z, pB.zahl()) });
+      }
+      const wahl = R.mische(kand).slice(0, 3).sort((u, v) => u.s - v.s);
+      if (wahl.length === 3 && wahl[1].s - wahl[0].s >= 0.45 && wahl[2].s - wahl[1].s >= 0.45) return { mu, wahl };
+    }
+  }
+  gen['bv-kenngroessen-hist'] = (stufe) => {
+    if (stufe === 1) {
+      const { mu, wahl } = gleichesMu();
+      const alle = wahl.map((d) => Array.from({ length: d.n + 1 }, (_, k) => pdf(d.n, d.pB.zahl(), k)));
+      const sMax = wahl[2].s;
+      const von = Math.max(0, Math.floor(mu - 4 * sMax)), kMax = Math.ceil(mu + 4 * sMax);
+      const yMax = schritt(Math.max(...alle.flat()), 4) * Math.ceil(Math.max(...alle.flat()) / schritt(Math.max(...alle.flat()), 4) - 1e-9);
+      const ziel = R.int(0, 2);
+      const t = wahl[ziel];
+      const reihenfolge = R.mische([0, 1, 2]);
+      const breite = ['am schmalsten', 'mittelbreit', 'am breitesten'][ziel];
+      return {
+        frage: `Die drei Histogramme gehören zu diesen Binomialverteilungen: ${wahl.map((d) => `$n=${d.n}$ und $p=${pTex(d.pB)}$`).join('; ')}. Alle Histogramme haben dieselben Achsen. Welches gehört zu ${npText(t.n, t.pB)}?`,
+        felder: [{ art: 'auswahl', label: 'Histogramm', optionen: reihenfolge.map((i) => histSvg(alle[i], { von, kMax, yMax, klein: true })), richtig: reihenfolge.indexOf(ziel) }],
+        notiz: true,
+        hinweis: 'Berechne für alle drei Verteilungen $\\mu$ und $\\sigma$. Was haben die Histogramme gemeinsam, worin unterscheiden sie sich?',
+        loesung: [
+          `Alle drei haben $\\mu=${mu}$, der Gipfel liegt also bei allen bei $k\\approx ${mu}$.`,
+          `$\\sigma$: ${wahl.map((d) => `$\\sqrt{${d.n}\\cdot ${pTex(d.pB)}\\cdot ${pTex(EINS.minus(d.pB))}}\\approx ${dzTex(d.s, 2)}$`).join(', ')}.`,
+          `Zu ${npText(t.n, t.pB)} gehört $\\sigma\\approx ${dzTex(t.s, 2)}$, das Histogramm ist also ${breite}.`,
+          { svg: histSvg(alle[ziel], { von, kMax, yMax }) },
+        ],
+      };
+    }
+    if (stufe === 2) {
+      // Wie verändern sich μ und σ?
+      const n = R.wahl([20, 25, 30, 40, 50]);
+      const art = R.int(0, 3);
+      let pB = R.wahl(['0,2', '0,3', '0,4', '0,6', '0,7', '0,8'].map(Bruch.dez)), n2 = n, p2B = pB, text;
+      if (art === 0) { n2 = 2 * n; text = `Die Anzahl der Versuche wird auf $n=${n2}$ verdoppelt, $p$ bleibt gleich.`; }
+      else if (art === 1) { n2 = 4 * n; text = `Die Anzahl der Versuche wird auf $n=${n2}$ vervierfacht, $p$ bleibt gleich.`; }
+      else if (art === 2) { p2B = EINS.minus(pB); text = `Treffer und Niete werden vertauscht: $p=${pTex(p2B)}$ statt $${pTex(pB)}$, $n$ bleibt gleich.`; }
+      else {
+        pB = R.wahl(['0,4', '0,6'].map(Bruch.dez));
+        p2B = Bruch.dez(pB.zahl() < 0.5 ? '0,2' : '0,8');
+        text = `Die Trefferwahrscheinlichkeit ändert sich von $p=${pTex(pB)}$ auf $p=${pTex(p2B)}$, $n$ bleibt gleich.`;
+      }
+      const OPT = ['$\\sigma$ verdoppelt sich.', '$\\sigma$ wird um den Faktor $\\sqrt{2}\\approx 1{,}41$ größer.', '$\\sigma$ bleibt gleich.', '$\\sigma$ wird kleiner.'];
+      const richtig = [1, 0, 2, 3][art];
+      const s1 = sigma(n, pB.zahl()), s2 = sigma(n2, p2B.zahl());
+      const ERKL = [
+        `Unter der Wurzel steht $n$: Doppelt so viele Versuche ergeben nur das $\\sqrt{2}$-Fache von $\\sigma$.`,
+        `Unter der Wurzel steht $n$: Viermal so viele Versuche ergeben das $\\sqrt{4}=2$-Fache von $\\sigma$.`,
+        `$p\\cdot(1-p)$ ändert sich beim Vertauschen nicht. Das Histogramm wird gespiegelt, bleibt aber gleich breit.`,
+        `$p$ liegt weiter von $0{,}5$ entfernt: $p\\cdot(1-p)$ wird kleiner, das Histogramm schmaler.`,
+      ];
+      return {
+        frage: `Eine Zufallsgröße $X$ ist binomialverteilt mit ${npText(n, pB)}. ${text} Berechne $\\mu$ und $\\sigma$ vorher und nachher und gib an, wie sich $\\sigma$ verändert. ${STELLEN2}`,
+        felder: [
+          muFeld('$\\mu$ vorher', n, pB), sigmaFeld('$\\sigma$ vorher', n, pB.zahl()),
+          muFeld('$\\mu$ nachher', n2, p2B), sigmaFeld('$\\sigma$ nachher', n2, p2B.zahl()),
+          auswahl('Veränderung', OPT[richtig], OPT.filter((_, i) => i !== richtig)),
+        ],
+        notiz: true,
+        hinweis: 'Rechne beide Fälle aus und vergleiche. Achte darauf, was unter der Wurzel steht.',
+        loesung: [
+          `Vorher: $${muRechnung(n, pB)}$, $${sigmaRechnung(n, pB)}$.`,
+          `Nachher: $${muRechnung(n2, p2B)}$, $${sigmaRechnung(n2, p2B)}$.`,
+          `${OPT[richtig]} ${ERKL[art]}${art < 2 ? ` Kontrolle: $${dzTex(s2, 2)}:${dzTex(s1, 2)}\\approx ${dzTex(s2 / s1, 2)}$.` : ''}`,
+        ],
+      };
+    }
+    // Stufe 3: absolute und relative Streuung
+    const pB = R.wahl(['0,2', '0,25', '0,3', '0,4'].map(Bruch.dez));
+    const n1 = R.wahl([25, 50, 100]), f = R.wahl([2, 4]), n2 = f * n1, p = pB.zahl();
+    const s1 = sigma(n1, p), s2 = sigma(n2, p);
+    for (const [sx, nx] of [[s1, n1], [s2, n2]]) if (komma((Number(sx.toFixed(2)) / nx) * 100, 1) !== komma((sx / nx) * 100, 1)) return gen['bv-kenngroessen-hist'](stufe);
+    const AUSSAGEN = [
+      `Die Aussage ist falsch: $\\sigma$ wächst nur mit $\\sqrt{n}$. Im Verhältnis zur Anzahl der Personen wird die Streuung bei der größeren Umfrage kleiner.`,
+      'Die Aussage stimmt: Ein größeres $\\sigma$ bedeutet, dass der Anteil stärker vom Zufall abhängt.',
+      `Die Aussage stimmt: $\\sigma$ wächst im selben Verhältnis wie $n$.`,
+      'Die Aussage ist falsch: $\\sigma$ ist bei beiden Umfragen gleich groß.',
+    ];
+    return {
+      frage: `Ein Anteil von ${pProzent(pB)} der Bevölkerung nutzt ein bestimmtes Angebot. In Umfrage A werden ${n1} Personen zufällig ausgewählt, in Umfrage B ${n2} Personen. $X$ ist jeweils die Anzahl der Befragten, die das Angebot nutzen.<br>Jemand behauptet: „Bei Umfrage B ist die Standardabweichung größer. Der Anteil der Nutzer in der Stichprobe hängt dort also stärker vom Zufall ab.“<br>Berechne $\\sigma$ für beide Umfragen und den Anteil $\\frac{\\sigma}{n}$ in Prozent. Beurteile dann die Aussage.`,
+      felder: [
+        sigmaFeld('$\\sigma$ bei A', n1, p), sigmaFeld('$\\sigma$ bei B', n2, p),
+        { art: 'naeherung', label: '$\\frac{\\sigma}{n}$ bei A in %', wert: (s1 / n1) * 100, stellen: 1 },
+        { art: 'naeherung', label: '$\\frac{\\sigma}{n}$ bei B in %', wert: (s2 / n2) * 100, stellen: 1 },
+        auswahl('Beurteilung', AUSSAGEN[0], AUSSAGEN.slice(1)),
+      ],
+      notiz: true,
+      hinweis: 'Vergleiche nicht nur $\\sigma$ selbst, sondern $\\sigma$ im Verhältnis zur Anzahl der Befragten. Runde die Anteile auf eine Nachkommastelle.',
+      loesung: [
+        `A: $${sigmaRechnung(n1, pB)}$, das sind $${dzTex(s1, 2)}:${n1}\\approx ${dzTex((s1 / n1) * 100, 1)}\\,\\%$ von $n$.`,
+        `B: $${sigmaRechnung(n2, pB)}$, das sind $${dzTex(s2, 2)}:${n2}\\approx ${dzTex((s2 / n2) * 100, 1)}\\,\\%$ von $n$.`,
+        `${AUSSAGEN[0]} Bei ${f}-mal so vielen Personen ist $\\sigma$ nur ${f === 4 ? 'doppelt' : 'etwa 1,41-mal'} so groß.`,
+      ],
+    };
+  };
+
+  UM.binomial = { bk, pdf, pdfExakt, cdf, KONTEXTE, KUM, histSvg, sigma, sigmaGrenzen };
 })(typeof window !== 'undefined' ? window : globalThis);

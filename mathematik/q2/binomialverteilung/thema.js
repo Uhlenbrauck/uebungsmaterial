@@ -1,5 +1,5 @@
 /*
- * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung (Q2 GK) – Übungen zum laufenden Unterricht
+ * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung (Q2 GK) – Übungen zum laufenden Unterricht
  *
  * Aufbau wie mathematik/klasse-10/…/thema.js, aber ohne Selbsteinschätzung (einschaetzung: false):
  * Die Zeilen erscheinen als „Was übe ich hier?“ und können später in die Checkliste zur Klausur übernommen werden.
@@ -12,7 +12,7 @@
     "fach": "Mathematik",
     "stufe": "Q2 (Grundkurs)",
     "titel": "Binomialverteilung",
-    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme und kumulierte Binomialverteilung",
+    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung",
     "einschaetzung": false,
     "arbeit": "Klausur",
     "test": {
@@ -110,6 +110,36 @@
         ],
         "uebungen": [
           { "gen": "bv-kum-kontext", "titel": "Sachaufgaben zur kumulierten Binomialverteilung" }
+        ]
+      },
+      {
+        "id": "kenngroessen",
+        "zeilen": [
+          "Ich kann den Erwartungswert $\\mu$ und die Standardabweichung $\\sigma$ einer binomialverteilten Zufallsgröße berechnen, …",
+          "… ich kann beide Kenngrößen im Sachzusammenhang deuten, …",
+          "… ich kann aus $\\mu$ und $\\sigma$ die Parameter $n$ und $p$ bestimmen."
+        ],
+        "uebungen": [
+          { "gen": "bv-kenngroessen", "titel": "Erwartungswert und Standardabweichung berechnen und deuten" }
+        ]
+      },
+      {
+        "id": "sigma-umgebung",
+        "zeilen": [
+          "Ich kann die Werte angeben, die höchstens um $\\sigma$ vom Erwartungswert abweichen, und die Wahrscheinlichkeit dafür mit binomCdf berechnen, …",
+          "… ich kann mit $\\sigma$ beschreiben, wie weit ein Ergebnis vom Erwartungswert entfernt ist."
+        ],
+        "uebungen": [
+          { "gen": "bv-sigma-umgebung", "titel": "Werte in der Nähe des Erwartungswerts" }
+        ]
+      },
+      {
+        "id": "kenngroessen-histogramm",
+        "zeilen": [
+          "Ich kann Histogramme mithilfe von $\\mu$ und $\\sigma$ zuordnen und beschreiben, wie sich $\\mu$ und $\\sigma$ ändern, wenn sich $n$ oder $p$ ändert."
+        ],
+        "uebungen": [
+          { "gen": "bv-kenngroessen-hist", "titel": "μ und σ im Histogramm: Einfluss von n und p" }
         ]
       }
     ]
