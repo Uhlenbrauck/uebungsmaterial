@@ -65,3 +65,19 @@ geholt werden.
   - 10.2 Quadratische Gleichungen `1-cb5fe889-21b9-40c5-bff9-2b929b584923`
 
 Für spätere Arbeiten desselben Kurses genügt deshalb Schritt 3. Bei einem neuen Abschnitt kommt Schritt 2 dazu.
+
+## Beispiel: M G3 (Abi 2027)
+
+- Kursseite `Abi27_M_G3_Uhl`
+- SITE-ID `fbgschwerte.sharepoint.com,3046bf2a-0c41-41de-ba30-2ee88c293441,57b6396b-deef-4ebc-9c8b-f88d4bbddfc2`
+- Abschnitte der Inhaltsbibliothek:
+  - 5 Sto - Stochastik `1-839e7fa0-3bd4-4311-9b94-362a0addb985`
+
+Seitentitel mit Schülernamen (z. B. Gruppenergebnisse) nicht übernehmen. Musterlösungen (AB …Z) bisher nicht verlinkt.
+
+## Hinweise zum Graph Explorer (Stand 11/2026)
+
+- Die Kursseite lässt sich suchen: `https://graph.microsoft.com/v1.0/sites?search=Uhl&$select=id,displayName,webUrl`.
+- In Schritt 2 kein `$select=displayName` zusammen mit `$expand` verwenden (Fehler 500); nur `$expand=sections($select=id,displayName)`.
+- Die Seite nach der Anmeldung nicht neu laden: Dabei geht die Anmeldung verloren (401, „Tenant Sample“).
+- Fehler 429: OneNote drosselt bei vielen Abfragen kurz hintereinander, etwas warten.
