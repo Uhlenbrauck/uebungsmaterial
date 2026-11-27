@@ -332,3 +332,27 @@ table.k5-tabelle { border-collapse: collapse; background: #fff; margin: .4rem 0;
 table.k5-tabelle th, table.k5-tabelle td { border: 1px solid #9aa6bb; padding: .3rem .8rem; text-align: center; min-width: 5rem; }
 table.k5-tabelle thead th { background: var(--flaeche); }
 .bild > svg[aria-label="Säulendiagramm"], .bild > svg[aria-label="Balkendiagramm"] { max-width: 600px; }
+
+/* Kurz erklärt (nur Themen mit Feld „erklaerung“) */
+details.erklaerung { border: 1px solid #f0d58a; border-radius: var(--radius); margin: .5rem 0; background: #fffbea; }
+details.erklaerung > summary { cursor: pointer; padding: .55rem .9rem; font-weight: 600; }
+details.erklaerung .erkl-inhalt { padding: 0 .9rem .7rem; }
+details.erklaerung .erkl-inhalt p, details.erklaerung .erkl-inhalt li { margin: .35rem 0; }
+details.erklaerung .erkl-inhalt .achtung { color: #9a3412; }
+
+/* Funktionsgraphen mit Flächen (Integralrechnung) */
+.ks-graph2 { fill: none; stroke: #15803d; stroke-width: 2.5; }
+.ks-graph3 { fill: none; stroke: #b45309; stroke-width: 2; stroke-dasharray: 6 4; }
+.ks-flaeche-pos { fill: rgba(37, 99, 201, .22); stroke: none; }
+.ks-flaeche-neg { fill: rgba(217, 45, 32, .22); stroke: none; }
+.ks-flaeche { fill: rgba(245, 158, 11, .3); stroke: none; }
+.ks-kaestchen { stroke: #cfd6e3; stroke-width: 1; }
+.ks-ftext { font-size: 13px; font-family: system-ui, sans-serif; fill: #1d2433; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.ks-gname { font-size: 14px; font-style: italic; font-family: system-ui, sans-serif; fill: #2563c9; }
+.ks-gname.g2 { fill: #15803d; }
+.ks-hilfe { stroke: #8a94a6; stroke-width: 1; stroke-dasharray: 4 3; }
+.bild > svg[aria-label="Funktionsgraph"] { max-width: 460px; }
+.bild > svg[aria-label="Änderungsrate"] { max-width: 600px; }
+.option svg.fg-klein { width: 200px; max-width: 100%; height: auto; display: block; }
+.term-eingabe { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.rechnung { font-family: inherit; }

@@ -14,6 +14,7 @@ assets/
   js/loesungen.js              Lösungsmengen mit Wurzeln ({−√2; √2}), gerundete Werte und Prozentangaben
   js/zufall.js                 Zufallshilfen für alle Generatoren
   js/cas.js                    CAS-Eingaben (TI-Nspire) prüfen: gleichwertige Formen, typische Fehler, Rechner-Seite
+  js/funktionsterm.js          Funktionsterme als Eingabe prüfen (Stammfunktion bis auf +C, Ableitung, typische Fehler)
   js/term.js                   Termbäume: Wert und Formel aus derselben Struktur
   js/zahlenstrahl.js           Zahlenstrahl als SVG (Bild, Pfeilbild, zum Anklicken)
   js/aufgaben.js               Darstellung und Prüfung einer Aufgabe
@@ -28,6 +29,8 @@ mathematik/klasse-7/rationale-zahlen/
   thema.js                     Kompetenzen (= Checkliste), Übungen, Realmath-Links, Test-Einstellungen
 mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/
                                Ma 10c 2026/27, Klassenarbeit Nr. 1
+mathematik/q1-lk/integralrechnung/
+                               Integralrechnung Q1 LK (nicht in der Übersicht verlinkt; mit „Kurz erklärt“)
 docs/notizbuch-links.md        Notizbuch-Links mit dem Graph Explorer holen
 tests/                         node --test, prüft alle Generatoren
 ```
@@ -44,6 +47,11 @@ tests/                         node --test, prüft alle Generatoren
 4. **Mein Lernstand** – vorher/nachher, gelöste Übungen je Ampelstufe, letzter Test und alle Testversuche;
    als PDF speicherbar (Druckansicht), damit die Schüler ihn im Klassennotizbuch ablegen. Der Name wird nur
    für den Ausdruck eingetragen und nicht gespeichert.
+
+## Erklärungen („Kurz erklärt“)
+
+Standardmäßig enthalten Themenseiten keine Erklärungen. Ausnahme nur nach Absprache: Hat eine Kompetenz in `thema.js`
+ein Feld `erklaerung` (HTML, Formeln in `$…$`), erscheint über ihren Übungen ein aufklappbarer Kasten „Kurz erklärt“.
 
 ## Neues Thema anlegen
 

@@ -24,12 +24,14 @@ const ALLE = [
   'assets/js/zahlenstrahl.js',
   'assets/js/zufall.js',
   'assets/js/cas.js',
+  'assets/js/funktionsterm.js',
   'assets/js/generatoren/rationale-zahlen.js',
   'assets/js/generatoren/wahrscheinlichkeit.js',
   'assets/js/generatoren/quadratische-funktionen.js',
   'assets/js/generatoren/cas-befehle.js',
   'assets/js/generatoren/binomialverteilung.js',
   'assets/js/generatoren/klasse5-daten-rechnen.js',
+  'assets/js/generatoren/integralrechnung.js',
 ];
 
 /**
