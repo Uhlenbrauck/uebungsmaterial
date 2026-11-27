@@ -306,6 +306,63 @@ test('Kumulierte Binomialverteilung: Ereignisse, Grenzen und Werte passen', () =
   }
 });
 
+test('Parameter bestimmen: Ergebnis und kritische Werte erfüllen die Bedingung', () => {
+  const { cdf } = UM.binomial;
+  for (let i = 0; i < 300; i++) {
+    for (const stufe of [1, 2, 3]) {
+      const a = UM.generatoren['bv-parameter-tabelle'](stufe);
+      const [e, w1, w2] = a.felder;
+      const q = Number(/mindestens (\d+) %/.exec(a.frage)[1]) / 100;
+      assert.ok(w1.wert >= q && w2.wert < q, a.frage);
+      const m = /Eingabe: <code class="cas">f\(x\):=binomCdf\(([^)]*)\)<\/code>/.exec(a.loesung[0]);
+      const arg = m[1].split(',');
+      const f = (x) => cdf(...arg.map((v) => (v === 'x' ? x : Number(v))).filter((_, j) => j !== 2).slice(0, 2), 0, Number(arg[3] === 'x' ? x : arg[3]));
+      const x = e.antwort.zahl();
+      const schritt = stufe === 3 ? 0.01 : 1;
+      const nach = stufe === 1 ? x - schritt : Math.round((x + schritt) * 100) / 100;
+      assert.ok(Math.abs(f(x) - w1.wert) < 1e-12 && Math.abs(f(nach) - w2.wert) < 1e-12, a.frage);
+    }
+  }
+});
+
+test('Erwartungswert und Standardabweichung: Grenzen, Wahrscheinlichkeit und Rückwärtsrechnung passen', () => {
+  const { cdf, sigma, sigmaGrenzen } = UM.binomial;
+  // Grenzen nach innen: alle Werte von a bis b weichen höchstens σ ab, a − 1 und b + 1 nicht
+  for (let i = 0; i < 1000; i++) {
+    const a = UM.generatoren['bv-sigma-umgebung'](2);
+    const c = a.felder.find((f) => f.art === 'cas');
+    const [lo, hi] = a.felder.filter((f) => f.art === 'zahl').map((f) => f.antwort.zahl());
+    const { n, p } = c.soll;
+    const mu = n * p, s = sigma(n, p);
+    assert.ok(Math.abs(lo - mu) <= s + 1e-9 && Math.abs(hi - mu) <= s + 1e-9, a.frage);
+    assert.ok(lo === 0 || Math.abs(lo - 1 - mu) > s, a.frage);
+    assert.ok(hi === n || Math.abs(hi + 1 - mu) > s, a.frage);
+    assert.deepStrictEqual([c.soll.a, c.soll.b], [lo, hi]);
+    assert.ok(Math.abs(cdf(n, p, lo, hi) - a.felder.find((f) => f.art === 'naeherung').wert) < 1e-12);
+  }
+  assert.deepStrictEqual((({ a, b }) => [a, b])(sigmaGrenzen(50, 0.2)), [8, 12]);
+  // Rückwärts: n und p ergeben die angegebenen μ und σ
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['bv-kenngroessen'](3);
+    const [n, p] = a.felder.map((f) => f.antwort.zahl());
+    const m = /\\mu=([\d{},]+)\$ und die Standardabweichung \$\\sigma=([\d{},]+)\$/.exec(a.frage);
+    const zahl = (t) => Number(t.replace('{,}', '.'));
+    assert.ok(Math.abs(n * p - zahl(m[1])) < 1e-9 && Math.abs(sigma(n, p) - zahl(m[2])) < 1e-9, a.frage);
+  }
+  // Veränderung von σ: Auswahl passt zu den berechneten Werten
+  for (let i = 0; i < 500; i++) {
+    const a = UM.generatoren['bv-kenngroessen-hist'](2);
+    const s = a.felder.filter((f) => f.art === 'naeherung').map((f) => f.wert);
+    const w = a.felder.find((f) => f.art === 'auswahl');
+    const r = w.optionen[w.richtig];
+    const q = s[1] / s[0];
+    if (r.includes('verdoppelt')) assert.ok(Math.abs(q - 2) < 1e-9);
+    else if (r.includes('sqrt{2}')) assert.ok(Math.abs(q - Math.SQRT2) < 1e-9);
+    else if (r.includes('gleich')) assert.ok(Math.abs(q - 1) < 1e-9);
+    else assert.ok(q < 1);
+  }
+});
+
 test('Binomialverteilung: Rechnung stimmt', () => {
   const { bk, pdf, pdfExakt } = UM.binomial;
   assert.strictEqual(bk(10, 3), 120);
