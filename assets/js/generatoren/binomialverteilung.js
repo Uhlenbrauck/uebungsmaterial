@@ -1000,7 +1000,7 @@
           auswahl('c) Annahme', P.annahme, ['Die Anzahl steht vorher fest.', 'Die Hälfte aller Fälle sind Treffer.', `Es werden genau ${Math.round(n * p)} gezählt.`]),
         ],
         notiz: true,
-        hinweis: `a) „reicht aus“ heißt $X\\le ${c0}$. b) Probiere verschiedene Anzahlen $c$ mit ${code(`binomCdf(${n},${casP(pB)},0,c)`)} aus – gesucht ist das kleinste $c$ mit $P(X\\le c)\\ge ${dzTex(q / 100, 2)}$.`,
+        hinweis: `a) „reicht aus“ heißt $X\\le ${c0}$. b) Lege eine Wertetabelle zu ${code(`f(x):=binomCdf(${n},${casP(pB)},0,x)`)} an – gesucht ist das kleinste $x$ mit $P(X\\le x)\\ge ${dzTex(q / 100, 2)}$.`,
         loesung: [
           `$n=${n}$, $p=${pTex(pB)}$. a) $P(X\\le ${c0})\\approx ${dzTex(w0)}$`,
           `b) $P(X\\le ${c - 1})\\approx ${dzTex(cdf(n, p, 0, c - 1))}<${dzTex(q / 100, 2)}$, aber $P(X\\le ${c})\\approx ${dzTex(cdf(n, p, 0, c))}\\ge ${dzTex(q / 100, 2)}$. Es müssen mindestens ${c} ${P.ding} vorhanden sein.`,

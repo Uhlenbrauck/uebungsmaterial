@@ -106,7 +106,7 @@
       {
         "id": "kumuliert-sachaufgaben",
         "zeilen": [
-          "Ich kann Sachaufgaben zur kumulierten Binomialverteilung lösen, auch wenn eine Anzahl gesucht ist, die mit einer vorgegebenen Wahrscheinlichkeit ausreicht."
+          "Ich kann Sachaufgaben zur kumulierten Binomialverteilung lösen."
         ],
         "uebungen": [
           { "gen": "bv-kum-kontext", "titel": "Sachaufgaben zur kumulierten Binomialverteilung" }
