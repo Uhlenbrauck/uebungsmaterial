@@ -1,6 +1,6 @@
 /*
  * Thema: Binomialverteilung (Q2 GK) – Vorbereitung auf die Klausur
- * Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen.
+ * Galtonbrett, Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen.
  *
  * Aufbau wie mathematik/klasse-10/…/thema.js:
  *   zeilen          Zeilen der Checkliste, jede mit eigener Selbsteinschätzung ($…$ = Formel)
@@ -17,7 +17,7 @@
     "fach": "Mathematik",
     "stufe": "Q2 (Grundkurs)",
     "titel": "Binomialverteilung",
-    "untertitel": "Vorbereitung auf die Klausur: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen",
+    "untertitel": "Vorbereitung auf die Klausur: Galtonbrett, Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen",
     "kurs": "M G3 (Abi 2027)",
     "arbeit": "Klausur",
     "test": {
@@ -25,6 +25,42 @@
       "stufen": [2, 2, 3]
     },
     "kompetenzen": [
+      {
+        "id": "galtonbrett",
+        "notizbuch": [
+          {
+            "titel": "02.10. | Galton-Brett",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#02.10.%20%7C%20Galton-Brett&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=9ef0d5d2-cf3b-4321-843c-2d53113b7738&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F5%20Sto%20-%20Stochastik.one%7Cdde00519-4181-467d-81e1-2eb3180d53f4%2F02.10.%20%5C%7C%20Galton-Brett%7C9ef0d5d2-cf3b-4321-843c-2d53113b7738%2F%29"
+          },
+          {
+            "titel": "AB 34 - Stochastik Galton Brett",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#%7C%20AB%2034%20-%20Stochastik%20Galton%20Brett&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=5d4cd7f6-8117-4066-b6d1-3a41c03603ed&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F5%20Sto%20-%20Stochastik.one%7Cdde00519-4181-467d-81e1-2eb3180d53f4%2F%5C%7C%20AB%2034%20-%20Stochastik%20Galton%20Brett%7C5d4cd7f6-8117-4066-b6d1-3a41c03603ed%2F%29"
+          },
+          {
+            "titel": "AB 35 - Galton Brett Verallgemeinerung",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#%7C%20AB%2035%20-%20Galton%20Brett%20Verallgemeinerung&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=6f158057-2cc3-ee41-9487-ee795d3454fb&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F5%20Sto%20-%20Stochastik.one%7Cdde00519-4181-467d-81e1-2eb3180d53f4%2F%5C%7C%20AB%2035%20-%20Galton%20Brett%20Verallgemeinerung%7C6f158057-2cc3-ee41-9487-ee795d3454fb%2F%29"
+          },
+          {
+            "titel": "AB 37 - Übungen Binomialverteilung",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#%7C%20AB%2037%20-%20%C3%9Cbungen%20Binomialverteilung&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=921e7713-b011-814a-bbc9-f292f3123c3c&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F5%20Sto%20-%20Stochastik.one%7Cdde00519-4181-467d-81e1-2eb3180d53f4%2F%5C%7C%20AB%2037%20-%20%C3%9Cbungen%20Binomialverteilung%7C921e7713-b011-814a-bbc9-f292f3123c3c%2F%29"
+          }
+        ],
+        "zeilen": [
+          "Ich kann am Galtonbrett die Anzahl der Wege in ein Fach bestimmen, z. B. mit dem Pascalschen Dreieck, …",
+          "… ich kann einen Binomialkoeffizienten $\\binom{n}{k}$ mit Fakultäten ohne Rechner und mit der CAS-App (nCr) berechnen.",
+          "Ich kann beim schiefen Galtonbrett mit den Pfadregeln bestimmen, mit welcher Wahrscheinlichkeit die Kugel in ein Fach fällt."
+        ],
+        "uebungen": [
+          {
+            "gen": "bv-galton",
+            "titel": "Galtonbrett: Wege, Binomialkoeffizient, schiefes Brett"
+          }
+        ]
+      },
       {
         "id": "bernoulli-kette",
         "notizbuch": [
@@ -87,6 +123,11 @@
       {
         "id": "formel",
         "notizbuch": [
+          {
+            "titel": "AB 35 - Galton Brett Verallgemeinerung",
+            "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#%7C%20AB%2035%20-%20Galton%20Brett%20Verallgemeinerung&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=6f158057-2cc3-ee41-9487-ee795d3454fb&end",
+            "web": "https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch?wd=target%28_Inhaltsbibliothek%2F5%20Sto%20-%20Stochastik.one%7Cdde00519-4181-467d-81e1-2eb3180d53f4%2F%5C%7C%20AB%2035%20-%20Galton%20Brett%20Verallgemeinerung%7C6f158057-2cc3-ee41-9487-ee795d3454fb%2F%29"
+          },
           {
             "titel": "06.11. | AB 36 - Binomialverteilung",
             "onenote": "onenote:https://fbgschwerte.sharepoint.com/sites/Abi27_M_G3_Uhl/SiteAssets/Abi27_M_G3_Uhl-Notizbuch/_Inhaltsbibliothek/5%20Sto%20-%20Stochastik.one#06.11.%20%7C%20AB%2036%20-%20Binomialverteilung&section-id=dde00519-4181-467d-81e1-2eb3180d53f4&page-id=b003763f-ce86-4042-b72e-3705174d4a40&end",

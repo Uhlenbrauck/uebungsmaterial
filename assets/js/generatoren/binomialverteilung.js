@@ -302,6 +302,89 @@
   const auswahlFeld = (richtig, falsch) => [auswahl('Wähle aus', richtig, falsch)];
 
   // =====================================================================
+  // 2b Galtonbrett: Anzahl der Wege, Binomialkoeffizient (AB 34/35)
+  // =====================================================================
+  /** Galtonbrett mit n Nagelreihen, Fächer 0 … n von links */
+  function galtonSvg(n) {
+    const d = 34, W = (n + 1) * d + 20, H = n * d + 64, mx = W / 2;
+    let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Galtonbrett mit ${n} Nagelreihen" style="max-width:${Math.round(W * 1.4)}px">`;
+    s += `<polygon points="${mx - 7},4 ${mx + 7},4 ${mx},14" fill="currentColor" opacity="0.5"/>`;
+    for (let r = 0; r < n; r++) for (let i = 0; i <= r; i++) s += `<circle cx="${mx + (i - r / 2) * d}" cy="${26 + r * d}" r="4" fill="currentColor"/>`;
+    const y0 = 26 + (n - 1) * d + 18, x0 = mx - ((n + 1) / 2) * d;
+    for (let i = 0; i <= n + 1; i++) s += `<line x1="${x0 + i * d}" x2="${x0 + i * d}" y1="${y0}" y2="${y0 + 26}" class="ks-achse"/>`;
+    s += `<line x1="${x0}" x2="${x0 + (n + 1) * d}" y1="${y0 + 26}" y2="${y0 + 26}" class="ks-achse"/>`;
+    for (let k = 0; k <= n; k++) s += `<text x="${x0 + (k + 0.5) * d}" y="${y0 + 18}" class="ks-zahl">${k}</text>`;
+    return s + '</svg>';
+  }
+  /** Zeile n des Pascalschen Dreiecks als TeX */
+  const pascalZeile = (n) => Array.from({ length: n + 1 }, (_, k) => bk(n, k)).join('\\quad ');
+  const fak = (m) => (m <= 1 ? 1 : m * fak(m - 1));
+
+  gen['bv-galton'] = (stufe) => {
+    if (stufe === 1) {
+      const n = R.int(3, 6);
+      const k = R.int(1, n - 1);
+      return {
+        frage: `Das Galtonbrett hat ${n} Nagelreihen. An jedem Nagel wird die Kugel nach links oder nach rechts abgelenkt. Fach $k$ erreicht die Kugel, wenn sie genau $k$-mal nach rechts abgelenkt wird. Wie viele Wege führen in Fach ${k}? Wie viele Wege gibt es insgesamt?`,
+        bild: galtonSvg(n),
+        felder: [
+          { art: 'zahl', label: `Wege in Fach ${k}`, antwort: new Bruch(bk(n, k)) },
+          { art: 'zahl', label: 'Wege insgesamt', antwort: new Bruch(2 ** n) },
+        ],
+        hinweis: 'Schreibe an jeden Nagel, auf wie vielen Wegen die Kugel ihn erreicht (Pascalsches Dreieck). An jedem Nagel gibt es zwei Möglichkeiten.',
+        loesung: [
+          `Zeile ${n} des Pascalschen Dreiecks (Fächer $0$ bis $${n}$): $${pascalZeile(n)}$`,
+          `In Fach ${k} führen $\\binom{${n}}{${k}}=${bk(n, k)}$ Wege. Insgesamt gibt es $2^{${n}}=${2 ** n}$ Wege.`,
+        ],
+      };
+    }
+    if (stufe === 2) {
+      const n = R.int(5, 10);
+      const k = R.wahl([2, 3, n - 2, n - 3].filter((x) => x >= 2 && x <= n - 2));
+      const j = Math.min(k, n - k);
+      const zaehler = Array.from({ length: j }, (_, i) => n - i).join('\\cdot ');
+      const nenner = Array.from({ length: j }, (_, i) => j - i).join('\\cdot ');
+      const ein = `nCr(${n},${k})`;
+      return {
+        frage: `Berechne $\\binom{${n}}{${k}}$ ohne Rechner mit der Formel $\\binom{n}{k}=\\frac{n!}{k!\\cdot(n-k)!}$. Mit welcher Eingabe kannst du das Ergebnis in der CAS-App kontrollieren?`,
+        felder: [
+          { art: 'zahl', label: `$\\binom{${n}}{${k}}=$`, antwort: new Bruch(bk(n, k)) },
+          auswahl('Eingabe in der CAS-App', code(ein), [code(`nCr(${k},${n})`), code(`${n}!/${k}!`), code(`binomPdf(${n},${k})`)]),
+        ],
+        hinweis: `Schreibe $${n}!$ als Produkt aus und kürze mit dem größeren der beiden Faktoren im Nenner.`,
+        loesung: [
+          `$\\binom{${n}}{${k}}=\\frac{${n}!}{${k}!\\cdot ${n - k}!}=\\frac{${zaehler}}{${nenner}}=\\frac{${fak(n) / fak(n - j)}}{${fak(j)}}=${bk(n, k)}$`,
+          `Kontrolle in der CAS-App: ${code(ein)} ergibt ${bk(n, k)}.`,
+        ],
+      };
+    }
+    // Stufe 3: schiefes Galtonbrett (AB 35) – Pfadwahrscheinlichkeit, Anzahl der Pfade, P(Fach k)
+    const n = R.int(3, 4);
+    const pB = R.wahl(['0,6', '0,7', '0,8', '0,3', '0,4'].map(Bruch.dez));
+    const q = EINS.minus(pB);
+    const k = R.int(1, n - 1);
+    const pfad = potExakt(pB, k).mal(potExakt(q, n - k));
+    const ges = pdfExakt(n, pB, k);
+    const bsp = 'R'.repeat(k) + 'L'.repeat(n - k);
+    return {
+      frage: `Bei einem schiefen Galtonbrett mit ${n} Nagelreihen wird die Kugel an jedem Nagel mit der Wahrscheinlichkeit $p=${pTex(pB)}$ nach rechts (R) und sonst nach links (L) abgelenkt. Bestimme die Wahrscheinlichkeit des Weges ${bsp}, die Anzahl der Wege in Fach ${k} und die Wahrscheinlichkeit, dass die Kugel in Fach ${k} fällt.`,
+      bild: galtonSvg(n),
+      felder: [
+        { art: 'naeherung', label: `$P(\\text{${bsp}})$`, wert: pfad.zahl(), exakt: pfad, stellen: 4 },
+        { art: 'zahl', label: `Wege in Fach ${k}`, antwort: new Bruch(bk(n, k)) },
+        wFeld(`$P(\\text{Fach } ${k})$`, ges.zahl(), ges),
+      ],
+      notiz: true,
+      hinweis: `Jeder Weg in Fach ${k} enthält genau ${k}-mal R und ${n - k}-mal L. Haben alle diese Wege dieselbe Wahrscheinlichkeit?`,
+      loesung: [
+        `$P(\\text{${bsp}})=${pot(pB, k)}\\cdot ${pot(q, n - k)}=${pfad.tex('dezimal')}$ (Pfadmultiplikationsregel)`,
+        `Jeder der $\\binom{${n}}{${k}}=${bk(n, k)}$ Wege in Fach ${k} hat diese Wahrscheinlichkeit.`,
+        `$P(\\text{Fach } ${k})=${formel(n, pB, k)}=${ges.tex('dezimal')}${Math.abs(Number(ges.zahl().toFixed(4)) - ges.zahl()) < 1e-12 ? '' : `\\approx ${dzTex(ges.zahl())}`}$ (Pfadadditionsregel)`,
+      ],
+    };
+  };
+
+  // =====================================================================
   // 3 Formel von Bernoulli (ohne CAS)
   // =====================================================================
   gen['bv-formel'] = (stufe) => {
