@@ -1,9 +1,14 @@
 /*
- * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen (Q2 GK) – Übungen zum laufenden Unterricht
+ * Thema: Binomialverteilung (Q2 GK) – Vorbereitung auf die Klausur
+ * Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen.
  *
- * Aufbau wie mathematik/klasse-10/…/thema.js, aber ohne Selbsteinschätzung (einschaetzung: false):
- * Die Zeilen erscheinen als „Was übe ich hier?“ und können später in die Checkliste zur Klausur übernommen werden.
- * Notizbuch-Links folgen später (docs/notizbuch-links.md).
+ * Aufbau wie mathematik/klasse-10/…/thema.js:
+ *   zeilen          Zeilen der Checkliste, jede mit eigener Selbsteinschätzung ($…$ = Formel)
+ *   notizbuch       Seiten im Klassennotizbuch (OneNote-App und Webansicht); nur mit Schul-Konto erreichbar,
+ *                   siehe docs/notizbuch-links.md
+ *   uebungen        Übungen dieser Seite (gen = Generator aus assets/js/generatoren/binomialverteilung.js)
+ * Schreibweise P_p^n(X ≤ k) nur dort, wo die Parameter wichtig sind (Parameter bestimmen).
+ * Keine σ-Regeln (GK). Kein seq: Parameter werden mit der Wertetabelle bestimmt.
  */
 (function (global) {
   'use strict';
@@ -12,8 +17,7 @@
     "fach": "Mathematik",
     "stufe": "Q2 (Grundkurs)",
     "titel": "Binomialverteilung",
-    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen",
-    "einschaetzung": false,
+    "untertitel": "Vorbereitung auf die Klausur: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen",
     "arbeit": "Klausur",
     "test": {
       "anzahlProKompetenz": 1,
