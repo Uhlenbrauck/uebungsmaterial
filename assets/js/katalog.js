@@ -47,7 +47,7 @@
           themen: [
             {
               titel: 'Binomialverteilung',
-              text: 'Übungen zum Unterricht: Bernoulli-Kette, Schreibweise P(X = k), Histogramme, Formel von Bernoulli, binomPdf und binomCdf, Gegenereignis, Sachaufgaben, Erwartungswert und Standardabweichung.',
+              text: 'Übungen zum Unterricht: Bernoulli-Kette, Schreibweise P(X = k), Histogramme, Formel von Bernoulli, binomPdf und binomCdf, Gegenereignis, Sachaufgaben, Erwartungswert und Standardabweichung, Parameter bestimmen.',
               pfad: 'mathematik/q2/binomialverteilung/index.html',
               status: 'neu',
             },

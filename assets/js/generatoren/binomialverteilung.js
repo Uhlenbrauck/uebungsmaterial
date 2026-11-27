@@ -7,6 +7,7 @@
  * CAS-Befehl: binomPdf(n,p,k) (TI-Nspire CAS), Prüfung in assets/js/cas.js.
  * Formel im Unterricht: P(X=k) = (n über k) · p^k · (1−p)^(n−k).
  * Kenngrößen (AB 40/41): μ = n·p, σ = √(n·p·(1−p)); σ-Regeln gehören nicht zum GK.
+ * Parameter bestimmen (AB 42/43): Wertetabelle zu f(x):=binomCdf(…), kein seq; Schreibweise P_p^n(X ≤ k).
  *
  * Die Aufgaben orientieren sich am Unterricht (Galtonbrett, Bernoulli-Kette, Formel, CAS),
  * nicht an den Aufgaben einer Klausur.
@@ -1318,5 +1319,161 @@
     };
   };
 
-  UM.binomial = { bk, pdf, pdfExakt, cdf, KONTEXTE, KUM, histSvg, sigma, sigmaGrenzen };
+
+  // =====================================================================
+  // Parameter bestimmen (AB 42/43): k, n oder p gesucht, Lösung über eine Wertetabelle
+  // Schreibweise im Kurs: P_p^n(X ≤ k). Dokumentation über die beiden kritischen Werte.
+  // =====================================================================
+  const PP = (p, n) => `P_{${p}}^{${n}}`;
+  const tx = (t) => t.replace(',', '{,}');              // „0,9“ → „0{,}9“ für KaTeX
+  const PARAM = [
+    { obj: 'Tickets', ein: 'Ticket', verb: 'verkauft', kap: 'Sitzplätze', ort: 'Ein Flugzeug', anlass: 'einen Flug', wer: 'Fluggäste', ziel: 'einen Sitzplatz', p: ['0,9', '0,92', '0,95'], k: [80, 120, 150, 180] },
+    { obj: 'Buchungen', ein: 'Buchung', verb: 'angenommen', kap: 'Zimmer', ort: 'Ein Hotel', anlass: 'ein Wochenende', wer: 'Gäste', ziel: 'ein Zimmer', p: ['0,85', '0,88', '0,9'], k: [60, 80, 100, 120] },
+    { obj: 'Reservierungen', ein: 'Reservierung', verb: 'angenommen', kap: 'Plätze', ort: 'Ein Restaurant', anlass: 'einen Abend', wer: 'Gäste', ziel: 'einen Platz', p: ['0,8', '0,85', '0,9'], k: [30, 40, 50, 60] },
+    { obj: 'Anmeldungen', ein: 'Anmeldung', verb: 'angenommen', kap: 'Plätze', ort: 'Ein Sportkurs', anlass: 'einen Kurstermin', wer: 'Teilnehmenden', ziel: 'einen Platz', p: ['0,75', '0,8', '0,85'], k: [20, 25, 30, 40] },
+  ];
+  const Q = ['0,9', '0,95', '0,99'];
+  const qProzent = (qT) => `${Math.round(Bruch.dez(qT).zahl() * 100)} %`;
+  /** kleinstes k mit P(X ≤ k) ≥ q */
+  function kMin(n, p, q) { let k = 0; while (cdf(n, p, 0, k) < q) k++; return k; }
+  /** größtes n mit P(X ≤ k) ≥ q */
+  function nMax(k, p, q) { let n = k; while (cdf(n + 1, p, 0, k) >= q) n++; return n; }
+  /** größtes p (Schritt 0,01) mit P(X ≤ k) ≥ q; null, wenn keins im Bereich 0,01 … 0,99 */
+  function pMax(n, k, q) {
+    let best = null;
+    for (let h = 1; h <= 99; h++) if (cdf(n, h / 100, 0, k) >= q) best = h;
+    return best;
+  }
+  /** beide kritischen Werte deutlich genug von q entfernt (Ablesen mit drei Nachkommastellen) */
+  const deutlich = (w1, w2, q) => w1 - q >= 0.0015 && q - w2 >= 0.0015;
+  const ansatzTex = (pS, nS, kS, qT, rel1 = '\\le', rel2 = '\\ge') => `${PP(pS, nS)}(X${rel1} ${kS})${rel2} ${tx(qT)}`;
+
+  /** Aufgabe mit gesuchtem k, n oder p; pS/nS/kS sind die TeX-Einträge des Ansatzes */
+  function paramAufgabe(art) {
+    for (;;) {
+      const K = R.wahl(PARAM), pT = R.wahl(K.p), qT = R.wahl(Q), q = Bruch.dez(qT).zahl();
+      const k0 = R.wahl(K.k), p = Bruch.dez(pT).zahl();
+      const sicher = `Mit einer Wahrscheinlichkeit von mindestens ${qProzent(qT)} sollen alle erscheinenden ${K.wer} ${K.ziel} bekommen.`;
+      const erscheint = `Eine Person mit ${K.ein} erscheint mit einer Wahrscheinlichkeit von ${pProzent(Bruch.dez(pT))}, unabhängig von den anderen.`;
+      if (art === 'k') {
+        const n = Math.round(k0 * R.wahl([1.05, 1.1, 1.15]));
+        const k = kMin(n, p, q);
+        const w1 = cdf(n, p, 0, k), w2 = cdf(n, p, 0, k - 1);
+        if (!deutlich(w1, w2, q) || k > n) continue;
+        return {
+          art, K, n, k: null, p, pT, qT, ergebnis: k, w1, w2, pS: tx(pT), nS: String(n), kS: 'k',
+          text: `Für ${K.anlass} wurden ${n} ${K.obj} ${K.verb}. ${erscheint} Wie viele ${K.kap} müssen mindestens vorhanden sein? ${sicher}`,
+          eingabe: `f(x):=binomCdf(${n},${p},0,x)`,
+          satz: `Es müssen mindestens ${k} ${K.kap} vorhanden sein.`,
+          krit: [`${PP(tx(pT), n)}(X\\le ${k - 1})\\approx ${dzTex(w2)}<${tx(qT)}`, `${PP(tx(pT), n)}(X\\le ${k})\\approx ${dzTex(w1)}\\ge ${tx(qT)}`],
+          richtung: `Die Werte steigen mit $x$. Gesucht ist der erste Wert, der mindestens $${tx(qT)}$ ist.`,
+        };
+      }
+      if (art === 'n') {
+        const k = k0, n = nMax(k, p, q);
+        const w1 = cdf(n, p, 0, k), w2 = cdf(n + 1, p, 0, k);
+        if (!deutlich(w1, w2, q) || n <= k) continue;
+        return {
+          art, K, n: null, k, p, pT, qT, ergebnis: n, w1, w2, pS: tx(pT), nS: 'n', kS: String(k),
+          text: `${K.ort} hat ${k} ${K.kap}. ${erscheint} Wie viele ${K.obj} dürfen höchstens ${K.verb} werden? ${sicher}`,
+          eingabe: `f(x):=binomCdf(x,${p},0,${k})`,
+          satz: `Es dürfen höchstens ${n} ${K.obj} ${K.verb} werden.`,
+          krit: [`${PP(tx(pT), n)}(X\\le ${k})\\approx ${dzTex(w1)}\\ge ${tx(qT)}`, `${PP(tx(pT), n + 1)}(X\\le ${k})\\approx ${dzTex(w2)}<${tx(qT)}`],
+          richtung: `Die Werte fallen mit $x$. Gesucht ist der letzte Wert, der mindestens $${tx(qT)}$ ist.`,
+        };
+      }
+      const k = k0, n = k + R.int(3, Math.max(4, Math.round(k * 0.15)));
+      const h = pMax(n, k, q);
+      if (h === null || h < 50 || h > 98) continue;
+      const w1 = cdf(n, h / 100, 0, k), w2 = cdf(n, (h + 1) / 100, 0, k);
+      if (!deutlich(w1, w2, q)) continue;
+      return {
+        art, K, n, k, p: null, pT: null, qT, ergebnis: Bruch.dez(komma(h / 100, 2)), w1, w2, pS: 'p', nS: String(n), kS: String(k),
+        text: `${K.ort} hat ${k} ${K.kap}, für ${K.anlass} werden ${n} ${K.obj} ${K.verb}. Die Personen erscheinen unabhängig voneinander. Wie groß darf die Wahrscheinlichkeit, dass eine Person mit ${K.ein} erscheint, höchstens sein? ${sicher} Gib die Wahrscheinlichkeit auf zwei Nachkommastellen an.`,
+        eingabe: `f(x):=binomCdf(${n},x,0,${k})`,
+        satz: `Die Wahrscheinlichkeit darf höchstens ${komma(h / 100, 2)} betragen.`,
+        krit: [`${PP(tx(komma(h / 100, 2)), n)}(X\\le ${k})\\approx ${dzTex(w1)}\\ge ${tx(qT)}`, `${PP(tx(komma((h + 1) / 100, 2)), n)}(X\\le ${k})\\approx ${dzTex(w2)}<${tx(qT)}`],
+        richtung: `Die Werte fallen mit $x$. Gesucht ist der letzte Wert, der mindestens $${tx(qT)}$ ist. Zuerst grob mit dem Schritt $0{,}1$ suchen, dann mit $0{,}01$ verfeinern.`,
+      };
+    }
+  }
+  const GESUCHT = { P: 'eine Wahrscheinlichkeit (keine Tabelle nötig)', k: 'die Anzahl $k$', n: 'die Anzahl $n$ der Versuche', p: 'die Trefferwahrscheinlichkeit $p$' };
+
+  // ---------- Fall erkennen, Ansatz, Eingabe ----------
+  gen['bv-ansatz'] = (stufe) => {
+    if (stufe === 1) {
+      const art = R.wahl(['k', 'n', 'p', 'P']);
+      let text, loes;
+      if (art === 'P') {
+        const K = R.wahl(PARAM), pT = R.wahl(K.p), k = R.wahl(K.k), n = Math.round(k * R.wahl([1.05, 1.1, 1.15]));
+        const p = Bruch.dez(pT).zahl();
+        text = `${K.ort} hat ${k} ${K.kap}, für ${K.anlass} werden ${n} ${K.obj} ${K.verb}. Eine Person mit ${K.ein} erscheint mit einer Wahrscheinlichkeit von ${pProzent(Bruch.dez(pT))}, unabhängig von den anderen. Mit welcher Wahrscheinlichkeit bekommen alle erscheinenden ${K.wer} ${K.ziel}?`;
+        loes = `$n=${n}$, $p=${tx(pT)}$ und $k=${k}$ sind gegeben. Gesucht ist nur die Wahrscheinlichkeit $${PP(tx(pT), n)}(X\\le ${k})$: ${code(`binomCdf(${n},${p},0,${k})`)} $\\approx ${dzTex(cdf(n, p, 0, k))}$.`;
+      } else {
+        const a = paramAufgabe(art);
+        text = a.text;
+        loes = `Gesucht ist ${GESUCHT[art]}. Ansatz: $${ansatzTex(a.pS, a.nS, a.kS, a.qT)}$.`;
+      }
+      return {
+        frage: `${text}<br>Was ist hier gesucht?`,
+        felder: [auswahl('Gesucht ist', GESUCHT[art], Object.keys(GESUCHT).filter((x) => x !== art).map((x) => GESUCHT[x]))],
+        notiz: true,
+        hinweis: 'Prüfe, welche der Zahlen $n$, $p$ und $k$ im Text stehen und welche fehlt.',
+        loesung: [loes],
+      };
+    }
+    const a = paramAufgabe(R.wahl(['k', 'n', 'p']));
+    const richtig = ansatzTex(a.pS, a.nS, a.kS, a.qT);
+    if (stufe === 2) {
+      const vertauscht = a.art === 'k' ? ansatzTex(a.pS, 'k', a.nS, a.qT) : a.art === 'n' ? ansatzTex(a.pS, a.kS, 'n', a.qT) : ansatzTex('p', a.kS, a.nS, a.qT);
+      const falsch = [ansatzTex(a.pS, a.nS, a.kS, a.qT, '\\ge'), ansatzTex(a.pS, a.nS, a.kS, a.qT, '\\le', '\\le'), vertauscht];
+      return {
+        frage: `${a.text}<br>Welcher Ansatz passt?`,
+        felder: [auswahl('Ansatz', `$${richtig}$`, falsch.map((x) => `$${x}$`))],
+        notiz: true,
+        hinweis: '„Alle bekommen einen Platz“ heißt: Es erscheinen höchstens so viele Personen, wie Plätze da sind. Welcher Parameter fehlt im Text?',
+        loesung: [`Gesucht ist ${GESUCHT[a.art]}. Ansatz: $${richtig}$.`, `Zur Kontrolle: ${a.satz}`],
+      };
+    }
+    // Stufe 3: Eingabe im Calculator und Lesen der Tabelle
+    const N = a.nS, Pz = a.p, Kz = a.kS;
+    const E = {
+      k: [`f(x):=binomCdf(${N},${Pz},0,x)`, `f(x):=binomCdf(x,${Pz},0,${N})`, `f(x):=binomCdf(${N},${Pz},x,${N})`, `f(x):=binomCdf(${N},${Pz},1,x)`],
+      n: [`f(x):=binomCdf(x,${Pz},0,${Kz})`, `f(x):=binomCdf(${Kz},${Pz},0,x)`, `f(x):=binomCdf(x,${Pz},${Kz},x)`, `f(x):=binomCdf(x,${Pz},1,${Kz})`],
+      p: [`f(x):=binomCdf(${N},x,0,${Kz})`, `f(x):=binomCdf(${Kz},x,0,${N})`, `f(x):=binomCdf(${N},x,${Kz},${N})`, `f(x):=binomCdf(${N},x,1,${Kz})`],
+    }[a.art];
+    const RICHT = ['Die Werte steigen. Gesucht ist der erste Wert, der die Grenze erreicht.', 'Die Werte fallen. Gesucht ist der letzte Wert, der die Grenze noch erreicht.', 'Die Werte steigen. Gesucht ist der letzte Wert, der die Grenze noch erreicht.', 'Die Werte fallen. Gesucht ist der erste Wert, der die Grenze erreicht.'];
+    const rR = a.art === 'k' ? 0 : 1;
+    return {
+      frage: `${a.text}<br>Der Ansatz lautet $${richtig}$. Welche Funktion definierst du im Calculator, und wie liest du die Wertetabelle?`,
+      felder: [auswahl('Eingabe', code(E[0]), E.slice(1).map(code)), auswahl('Tabelle', RICHT[rR], RICHT.filter((_, i) => i !== rR))],
+      notiz: true,
+      hinweis: 'Das $x$ steht in binomCdf an derselben Stelle wie die Unbekannte im Ansatz. Werden die Werte größer oder kleiner, wenn die Unbekannte wächst?',
+      loesung: [`Eingabe: ${code(E[0])}`, a.richtung, `Kritische Werte: $${a.krit[0]}$ und $${a.krit[1]}$. ${a.satz}`],
+    };
+  };
+
+  // ---------- Parameter mit der Wertetabelle bestimmen ----------
+  gen['bv-parameter-tabelle'] = (stufe) => {
+    const a = paramAufgabe(['k', 'n', 'p'][stufe - 1]);
+    const label = { k: `Anzahl der ${a.K.kap}`, n: `Anzahl der ${a.K.obj}`, p: 'Wahrscheinlichkeit' }[a.art];
+    return {
+      frage: `${a.text}<br>Stelle einen Ansatz auf und bestimme das Ergebnis mit einer Wertetabelle. Gib die beiden kritischen Werte auf drei Nachkommastellen an: zuerst beim Ergebnis, dann beim Nachbarwert, für den die Bedingung nicht mehr erfüllt ist.`,
+      felder: [
+        { art: 'zahl', label, antwort: a.art === 'p' ? a.ergebnis : new Bruch(a.ergebnis) },
+        { art: 'naeherung', label: 'kritischer Wert beim Ergebnis', wert: a.w1, stellen: 3 },
+        { art: 'naeherung', label: 'kritischer Wert beim Nachbarwert', wert: a.w2, stellen: 3 },
+      ],
+      notiz: true,
+      hinweis: `Welcher der Parameter $n$, $p$, $k$ fehlt im Text? Definiere im Calculator ${code('f(x):=binomCdf(…)')} mit $x$ an dieser Stelle und lass dir in Lists & Spreadsheet mit ctrl + T die Wertetabelle anzeigen.${a.art === 'p' ? ' Stelle den Tabellenschritt zuerst auf 0,1, dann auf 0,01.' : ''}`,
+      loesung: [
+        `Ansatz: $${ansatzTex(a.pS, a.nS, a.kS, a.qT)}$. Eingabe: ${code(a.eingabe)}.`,
+        a.richtung,
+        `Kritische Werte: $${a.krit[0]}$ und $${a.krit[1]}$.`,
+        a.satz,
+      ],
+    };
+  };
+
+  UM.binomial = { bk, pdf, pdfExakt, cdf, KONTEXTE, KUM, histSvg, sigma, sigmaGrenzen, kMin, nMax, pMax };
 })(typeof window !== 'undefined' ? window : globalThis);

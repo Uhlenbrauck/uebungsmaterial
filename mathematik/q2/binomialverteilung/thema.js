@@ -1,5 +1,5 @@
 /*
- * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung (Q2 GK) – Übungen zum laufenden Unterricht
+ * Thema: Binomialverteilung, Formel von Bernoulli, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen (Q2 GK) – Übungen zum laufenden Unterricht
  *
  * Aufbau wie mathematik/klasse-10/…/thema.js, aber ohne Selbsteinschätzung (einschaetzung: false):
  * Die Zeilen erscheinen als „Was übe ich hier?“ und können später in die Checkliste zur Klausur übernommen werden.
@@ -12,7 +12,7 @@
     "fach": "Mathematik",
     "stufe": "Q2 (Grundkurs)",
     "titel": "Binomialverteilung",
-    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung",
+    "untertitel": "Übungen zum Unterricht: Formel von Bernoulli, Histogramme, kumulierte Binomialverteilung, Erwartungswert und Standardabweichung, Parameter bestimmen",
     "einschaetzung": false,
     "arbeit": "Klausur",
     "test": {
@@ -140,6 +140,17 @@
         ],
         "uebungen": [
           { "gen": "bv-kenngroessen-hist", "titel": "μ und σ im Histogramm: Einfluss von n und p" }
+        ]
+      },
+      {
+        "id": "parameter-bestimmen",
+        "zeilen": [
+          "Ich kann bei einer Sachaufgabe erkennen, ob eine Wahrscheinlichkeit oder einer der Parameter $n$, $p$ oder $k$ gesucht ist, und den Ansatz als Ungleichung in der Form $P_p^n(X\\le k)\\ge \\ldots$ aufstellen, …",
+          "… ich kann den gesuchten Parameter mit einer Wertetabelle im CAS bestimmen und mit den beiden kritischen Werten dokumentieren."
+        ],
+        "uebungen": [
+          { "gen": "bv-ansatz", "titel": "Was ist gesucht? Ansatz und Eingabe" },
+          { "gen": "bv-parameter-tabelle", "titel": "Parameter mit der Wertetabelle bestimmen" }
         ]
       }
     ]

@@ -244,6 +244,25 @@ test('Kumulierte Binomialverteilung: Ereignisse, Grenzen und Werte passen', () =
   }
 });
 
+test('Parameter bestimmen: Ergebnis und kritische Werte erfüllen die Bedingung', () => {
+  const { cdf } = UM.binomial;
+  for (let i = 0; i < 300; i++) {
+    for (const stufe of [1, 2, 3]) {
+      const a = UM.generatoren['bv-parameter-tabelle'](stufe);
+      const [e, w1, w2] = a.felder;
+      const q = Number(/mindestens (\d+) %/.exec(a.frage)[1]) / 100;
+      assert.ok(w1.wert >= q && w2.wert < q, a.frage);
+      const m = /Eingabe: <code class="cas">f\(x\):=binomCdf\(([^)]*)\)<\/code>/.exec(a.loesung[0]);
+      const arg = m[1].split(',');
+      const f = (x) => cdf(...arg.map((v) => (v === 'x' ? x : Number(v))).filter((_, j) => j !== 2).slice(0, 2), 0, Number(arg[3] === 'x' ? x : arg[3]));
+      const x = e.antwort.zahl();
+      const schritt = stufe === 3 ? 0.01 : 1;
+      const nach = stufe === 1 ? x - schritt : Math.round((x + schritt) * 100) / 100;
+      assert.ok(Math.abs(f(x) - w1.wert) < 1e-12 && Math.abs(f(nach) - w2.wert) < 1e-12, a.frage);
+    }
+  }
+});
+
 test('Erwartungswert und Standardabweichung: Grenzen, Wahrscheinlichkeit und Rückwärtsrechnung passen', () => {
   const { cdf, sigma, sigmaGrenzen } = UM.binomial;
   // Grenzen nach innen: alle Werte von a bis b weichen höchstens σ ab, a − 1 und b + 1 nicht
