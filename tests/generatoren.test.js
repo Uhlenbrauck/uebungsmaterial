@@ -150,12 +150,74 @@ for (const [name, g] of Object.entries(UM.generatoren)) {
             assert.ok(UM.pruefeCas(f.loesung, f.soll).ok, `${wo}: eigene Lösung ${f.loesung} nicht erkannt`);
             assert.ok(!UM.pruefeCas(f.loesung.slice(0, -1), f.soll).ok, `${wo}: ohne Klammer erkannt`);
             assert.ok(typeof f.ausgabe === 'string' && f.ausgabe.length > 0 && !/NaN|undefined/.test(f.ausgabe), `${wo}: Ausgabe ${f.ausgabe}`);
+          } else if (f.art === 'term') {
+            // Die eigene Musterlösung wird erkannt, ein falscher Term nicht
+            assert.ok(UM.pruefeTerm(f.loesung, f).ok, `${wo}: eigene Lösung ${f.loesung} nicht erkannt (soll ${f.soll})`);
+            assert.ok(!UM.pruefeTerm(`${f.loesung} + x`, f).ok, `${wo}: falscher Term erkannt`);
+            if (f.modus === 'stamm') assert.ok(UM.pruefeTerm(`${f.loesung} + 3`, f).ok, `${wo}: + Konstante nicht erkannt`);
+            if (f.modus === 'stamm') assert.ok(UM.pruefeTerm(`${f.loesung} + C`, f).ok, `${wo}: + C nicht erkannt`);
           } else assert.fail(`${wo}: unbekanntes Feld ${f.art}`);
         }
       }
     }
   });
 }
+
+/** Simpson-Regel (unabhängig von der exakten Rechnung im Generator) */
+function simpson(fn, a, b, n = 2000) {
+  const h = (b - a) / n;
+  let s = fn(a) + fn(b);
+  for (let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * fn(a + i * h);
+  return (s * h) / 3;
+}
+
+test('Integralrechnung: Integrale und Flächen stimmen numerisch', () => {
+  const f = UM.funktionsterm.funktion;
+  let n = 0;
+  for (const name of ['ir-orientiert', 'ir-hdi', 'ir-flaeche-x', 'ir-flaeche-zwei', 'ir-sach']) {
+    for (let i = 0; i < 400; i++) {
+      const a = UM.generatoren[name](1 + (i % 3));
+      for (const p of a.pruef || []) {
+        const fn = f(p.f);
+        const gn = p.g ? f(p.g) : () => 0;
+        const wert = p.art === 'integral' ? simpson(fn, p.a, p.b) : simpson((x) => Math.abs(fn(x) - gn(x)), p.a, p.b, 20000);
+        assert.ok(Math.abs(wert - p.wert) < 1e-4 * Math.max(1, Math.abs(p.wert)), `${name}: ${p.art} ${p.f} [${p.a}; ${p.b}] = ${wert} ≠ ${p.wert}`);
+        // Das Ergebnisfeld enthält diesen Wert
+        assert.ok(a.felder.some((x) => (x.art === 'naeherung' || x.art === 'zahl') && Math.abs((x.wert ?? x.antwort.zahl()) - p.wert) < 1e-9), `${name}: Ergebnisfeld passt nicht`);
+        n++;
+      }
+    }
+  }
+  assert.ok(n > 1000);
+});
+
+test('Integralrechnung: Termeingabe – Schreibweisen und typische Fehler', () => {
+  const feld = { soll: '(1/4)*x^4+2*x^3-5*x', modus: 'stamm', funktion: 'x^3+6*x^2-5', ableitung: '3*x^2+12*x' };
+  for (const t of ['1/4x^4 + 2x^3 − 5x', '0,25x^4+2x³-5x+C', 'F(x)=x^4/4+2x^3-5x+7', '1/4*x^(4)+2*x^3-5*x']) assert.ok(UM.pruefeTerm(t, feld).ok, t);
+  assert.match(UM.pruefeTerm('3x^2+12x', feld).meldung, /abgeleitet/);
+  assert.match(UM.pruefeTerm('x^3+6x^2-5', feld).meldung, /selbst/);
+  assert.match(UM.pruefeTerm('x^4+2x^3-5x', feld).meldung, /Probe|Faktor/);
+  assert.match(UM.pruefeTerm('(x^2', feld).meldung, /Klammern/);
+  const wurzel = { soll: '2*x^(3/2)', modus: 'stamm', funktion: '3*x^(1/2)' };
+  for (const t of ['2x^(3/2)', '2√(x^3)', '2x√x', '2x*sqrt(x)']) assert.ok(UM.pruefeTerm(t, wurzel).ok, t);
+  const bruch = { soll: '-3*x^(-1)', modus: 'stamm', funktion: '3*x^(-2)' };
+  for (const t of ['-3/x', '−3x^(−1)', '-3x^-1']) assert.ok(UM.pruefeTerm(t, bruch).ok, t);
+  const mitT = { soll: '(1/3)*x^3', modus: 'stamm', variable: 't' };
+  assert.ok(UM.pruefeTerm('1/3t^3', mitT).ok);
+  assert.ok(UM.pruefeTerm('t^3/3 + c', mitT).ok);
+  const bed = { soll: 'x^2+3', modus: 'gleich', bedingung: 'F(0) = 3' };
+  assert.match(UM.pruefeTerm('x^2', bed).meldung, /Konstante/);
+});
+
+test('Integralrechnung: Fehler-Aufgaben – die gezeigte Rechnung ist wirklich falsch', () => {
+  for (let i = 0; i < 600; i++) {
+    const a = UM.generatoren['ir-fehler'](1 + (i % 3));
+    const [p] = a.pruef;
+    const ergebnis = a.felder.find((f) => f.art === 'naeherung');
+    assert.ok(Math.abs(p.gezeigt - p.richtig) > 1e-9, `gezeigt ${p.gezeigt} = richtig ${p.richtig}`);
+    assert.ok(Math.abs(ergebnis.wert - p.richtig) < 1e-12);
+  }
+});
 
 test('CAS: gleichwertige Eingaben und typische Fehler', () => {
   const F = '-0.0215*x^2+0.254*x+0.9';
@@ -351,7 +413,7 @@ test('Fehler finden: Aufgabe ist wirklich falsch, Lösung richtig', () => {
   }
 });
 
-for (const pfad of ['mathematik/klasse-5/daten-addieren-subtrahieren/thema.js', 'mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js', 'mathematik/q2/binomialverteilung/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
+for (const pfad of ['mathematik/klasse-5/daten-addieren-subtrahieren/thema.js', 'mathematik/klasse-7/rationale-zahlen/thema.js', 'mathematik/klasse-10/wahrscheinlichkeit-quadratische-gleichungen/thema.js', 'mathematik/q2/binomialverteilung/thema.js', 'mathematik/q1-lk/integralrechnung/thema.js']) test(`Thema ${pfad}: jede Kompetenz hat Checklisten-Zeilen und vorhandene Generatoren`, () => {
   const UMt = lade(...ALLE, pfad);
   const ids = new Set();
   for (const k of UMt.thema.kompetenzen) {
