@@ -171,6 +171,8 @@
         : null;
       return el('section', { class: 'kompetenz', id: k.id },
         el('h2', {}, el('span', { class: 'nr' }, String(nr + 1)), el('span', {}, 'Übungen zu: ', el('span', { html: k.zeilen.join(' ').replace(/\s*…\s*…\s*/g, ' … ') }))),
+        // Kurz erklärt: nur, wenn das Thema es ausdrücklich vorsieht (thema.js, Feld „erklaerung“)
+        k.erklaerung ? el('details', { class: 'erklaerung' }, el('summary', {}, el('span', { class: 'titel' }, '📖 Kurz erklärt')), el('div', { class: 'erkl-inhalt', html: k.erklaerung })) : null,
         ...k.uebungen.map((u) => uebungKarte(k, u)),
         realmath);
     }
